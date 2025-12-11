@@ -1,1 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Assessment - HRMS</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-md);
+        }
+        
+        .assessment-container {
+            max-width: 700px;
+            width: 100%;
+            background-color: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+        
+        .assessment-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: var(--spacing-2xl);
+            text-align: center;
+        }
+        
+        .assessment-header h1 {
+            font-size: 1.75rem;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .assessment-header p {
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .assessment-body {
+            padding: var(--spacing-2xl);
+        }
+        
+        .question-section {
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .question-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .question-text {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--white);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: var(--spacing-2xl);
+        }
+        
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        @media (max-width: 768px) {
+            .timer {
+                position: static;
+                margin-bottom: var(--spacing-md);
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="assessment-container">
+        <div class="assessment-header">
+            <h1>🎯 Candidate Assessment</h1>
+            <p>N.T Woods Pvt. Ltd. - Interview Form</p>
+        </div>
+        
+        <div class="assessment-body" id="assessmentForm">
+            <div class="alert alert-info">
+                <strong>Instructions:</strong> Please fill out all the questions carefully. You have 15 minutes to complete this assessment.
+            </div>
+            
+            <div class="timer" id="timer">
+                ⏱️ Time: <span id="timeDisplay">15:00</span>
+            </div>
+            
+            <form id="candidateForm">
+                <!-- Question 1 -->
+                <div class="question-section">
+                    <div class="question-number">Question 1 of 7</div>
+                    <div class="question-text">Your Full Name</div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="fullName" required 
+                               placeholder="Enter your full name">
+                    </div>
+                </div>
+                
+                <!-- Question 2 -->
+                <div class="question-section">
+                    <div class="question-number">Question 2 of 7</div>
+                    <div class="question-text">Applying For (Job Post)</div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="jobPost" required 
+                               placeholder="e.g., CRM, Accountant, etc.">
+                    </div>
+                </div>
+                
+                <!-- Question 3 -->
+                <div class="question-section">
+                    <div class="question-number">Question 3 of 7</div>
+                    <div class="question-text">Where did you get info about this job?</div>
+                    <div class="form-group">
+                        <select class="form-control" id="source" required>
+                            <option value="">-- Select Source --</option>
+                            <option value="Naukri.com">Naukri.com</option>
+                            <option value="Indeed">Indeed</option>
+                            <option value="Work India">Work India</option>
+                            <option value="Apna">Apna</option>
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Referral">Referral</option>
+                            <option value="Direct">Direct</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Question 4 -->
+                <div class="question-section">
+                    <div class="question-number">Question 4 of 7</div>
+                    <div class="question-text" id="question4Text"></div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="answer4" required 
+                               placeholder="Enter your answer">
+                    </div>
+                </div>
+                
+                <!-- Dynamic Question 5 -->
+                <div class="question-section">
+                    <div class="question-number">Question 5 of 7</div>
+                    <div class="question-text" id="question5Text"></div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="answer5" required 
+                               placeholder="Enter your answer">
+                    </div>
+                </div>
+                
+                <!-- Dynamic Question 6 -->
+                <div class="question-section">
+                    <div class="question-number">Question 6 of 7</div>
+                    <div class="question-text" id="question6Text"></div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="answer6" required 
+                               placeholder="Enter your answer">
+                    </div>
+                </div>
+                
+                <!-- Dynamic Question 7 -->
+                <div class="question-section">
+                    <div class="question-number">Question 7 of 7</div>
+                    <div class="question-text" id="question7Text"></div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="answer7" required 
+                               placeholder="Enter your answer">
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        ✓ Submit Assessment
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="success-screen" id="successScreen">
+            <div class="success-icon">✅</div>
+            <h2>Assessment Submitted Successfully!</h2>
+            <p>Thank you for completing the assessment. Our team will review your responses and get back to you soon.</p>
+            <p style="margin-top: 2rem; color: var(--text-secondary);">
+                You can now close this window.
+            </p>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/candidate-assessment.js"></script>
+</body>
+</html>
 
