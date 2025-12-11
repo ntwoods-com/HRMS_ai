@@ -4,180 +4,219 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - HRMS</title>
-    <link rel="stylesheet" href="../assets/css/common.css">
-    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <!-- Enhanced CSS -->
+    <link rel="stylesheet" href="../assets/css/enhanced.css">
+    <link rel="stylesheet" href="../assets/css/dashboard-enhanced.css">
 </head>
 <body>
-    <div class="dashboard-container">
+    <div class="app-wrapper">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>🏢 HRMS Admin</h2>
-                <p>N.T Woods Pvt. Ltd.</p>
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-logo">🏢</div>
+                <div class="sidebar-brand-text">
+                    HRMS Admin
+                    <span>N.T Woods Pvt. Ltd.</span>
+                </div>
             </div>
             
             <nav class="sidebar-menu">
-                <a href="dashboard.html" class="menu-item active">
-                    <span class="menu-item-icon">📊</span>
-                    <span>Dashboard</span>
-                </a>
-                <a href="users.html" class="menu-item">
-                    <span class="menu-item-icon">👥</span>
-                    <span>User Management</span>
-                </a>
-                <a href="permissions.html" class="menu-item">
-                    <span class="menu-item-icon">🔐</span>
-                    <span>Permissions</span>
-                </a>
-                <a href="templates.html" class="menu-item">
-                    <span class="menu-item-icon">📝</span>
-                    <span>Job Templates</span>
-                </a>
-                <a href="requirements.html" class="menu-item">
-                    <span class="menu-item-icon">📋</span>
-                    <span>Requirements</span>
-                </a>
-                <a href="candidates.html" class="menu-item">
-                    <span class="menu-item-icon">👤</span>
-                    <span>Candidates</span>
-                </a>
-                <a href="tests.html" class="menu-item">
-                    <span class="menu-item-icon">✏️</span>
-                    <span>Test Management</span>
-                </a>
-                <a href="reports.html" class="menu-item">
-                    <span class="menu-item-icon">📈</span>
-                    <span>Reports</span>
-                </a>
+                <div class="menu-section">
+                    <div class="menu-section-title">Main</div>
+                    <a href="dashboard.html" class="menu-item active">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">Management</div>
+                    <a href="users.html" class="menu-item">
+                        <span class="menu-icon">👥</span>
+                        <span class="menu-text">User Management</span>
+                    </a>
+                    <a href="permissions.html" class="menu-item">
+                        <span class="menu-icon">🔐</span>
+                        <span class="menu-text">Permissions</span>
+                    </a>
+                    <a href="templates.html" class="menu-item">
+                        <span class="menu-icon">📝</span>
+                        <span class="menu-text">Job Templates</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">Recruitment</div>
+                    <a href="requirements.html" class="menu-item">
+                        <span class="menu-icon">📋</span>
+                        <span class="menu-text">Requirements</span>
+                    </a>
+                    <a href="candidates.html" class="menu-item">
+                        <span class="menu-icon">👤</span>
+                        <span class="menu-text">Candidates</span>
+                    </a>
+                    <a href="tests.html" class="menu-item">
+                        <span class="menu-icon">✏️</span>
+                        <span class="menu-text">Test Management</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">Analytics</div>
+                    <a href="reports.html" class="menu-item">
+                        <span class="menu-icon">📈</span>
+                        <span class="menu-text">Reports</span>
+                    </a>
+                </div>
             </nav>
             
             <div class="sidebar-footer">
                 <div class="user-info">
                     <div class="user-avatar" id="userAvatar">A</div>
                     <div class="user-details">
-                        <h4 id="userName">Admin User</h4>
-                        <p id="userRole">Administrator</p>
+                        <div class="user-name" id="userName">Admin User</div>
+                        <div class="user-role" id="userRole">Administrator</div>
                     </div>
                 </div>
-                <button class="btn btn-secondary w-100" onclick="logout()">
+                <button class="btn btn-ghost w-full mt-4" onclick="logout()">
                     <span>🚪</span> Logout
                 </button>
             </div>
         </aside>
         
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
         <!-- Main Content -->
         <main class="main-content">
             <!-- Top Bar -->
-            <div class="top-bar">
+            <header class="top-bar">
                 <div class="top-bar-left">
-                    <button class="menu-toggle" id="menuToggle">☰</button>
-                    <div class="page-title">
-                        <h1>Dashboard</h1>
+                    <button class="sidebar-toggle" id="menuToggle">
+                        <span></span>
+                    </button>
+                    <div class="search-bar">
+                        <span class="search-bar-icon">🔍</span>
+                        <input type="text" placeholder="Search anything...">
                     </div>
                 </div>
                 <div class="top-bar-right">
-                    <button class="notification-icon">
+                    <button class="top-bar-btn">
                         🔔
-                        <span class="notification-badge">5</span>
+                        <span class="badge-count">5</span>
+                    </button>
+                    <button class="top-bar-btn">⚙️</button>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle">Welcome back! Here's what's happening today.</p>
+                    </div>
+                    <button class="btn btn-primary btn-ripple" onclick="refreshDashboard()">
+                        🔄 Refresh Data
                     </button>
                 </div>
-            </div>
-            
-            <!-- Content Area -->
-            <div class="content-area">
-                <!-- Dashboard Statistics -->
-                <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <div class="stat-icon primary">
-                            👥
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="totalUsers">0</h3>
-                            <p>Total Users</p>
-                        </div>
+                
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card hover-lift">
+                        <div class="stat-card-icon">👥</div>
+                        <div class="stat-card-value" id="totalUsers">0</div>
+                        <div class="stat-card-label">Total Users</div>
                     </div>
                     
-                    <div class="stat-card">
-                        <div class="stat-icon success">
-                            📋
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="totalRequirements">0</h3>
-                            <p>Total Requirements</p>
-                        </div>
+                    <div class="stat-card success hover-lift">
+                        <div class="stat-card-icon">📋</div>
+                        <div class="stat-card-value" id="totalRequirements">0</div>
+                        <div class="stat-card-label">Total Requirements</div>
                     </div>
                     
-                    <div class="stat-card">
-                        <div class="stat-icon warning">
-                            👤
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="totalCandidates">0</h3>
-                            <p>Total Candidates</p>
-                        </div>
+                    <div class="stat-card warning hover-lift">
+                        <div class="stat-card-icon">👤</div>
+                        <div class="stat-card-value" id="totalCandidates">0</div>
+                        <div class="stat-card-label">Total Candidates</div>
                     </div>
                     
-                    <div class="stat-card">
-                        <div class="stat-icon danger">
-                            📝
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="totalTemplates">0</h3>
-                            <p>Job Templates</p>
+                    <div class="stat-card info hover-lift">
+                        <div class="stat-card-icon">📝</div>
+                        <div class="stat-card-value" id="totalTemplates">0</div>
+                        <div class="stat-card-label">Job Templates</div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <a href="requirements.html" class="quick-action-card">
+                        <div class="quick-action-icon">➕</div>
+                        <span class="quick-action-title">New Requirement</span>
+                    </a>
+                    <a href="users.html" class="quick-action-card">
+                        <div class="quick-action-icon">👤</div>
+                        <span class="quick-action-title">Add User</span>
+                    </a>
+                    <a href="templates.html" class="quick-action-card">
+                        <div class="quick-action-icon">📄</div>
+                        <span class="quick-action-title">Create Template</span>
+                    </a>
+                    <a href="reports.html" class="quick-action-card">
+                        <div class="quick-action-icon">📊</div>
+                        <span class="quick-action-title">View Reports</span>
+                    </a>
+                </div>
+                
+                <!-- Recent Activity Card -->
+                <div class="card">
+                    <div class="card-header d-flex justify-between align-center">
+                        <h3>Recent Activity</h3>
+                        <button class="btn btn-sm btn-ghost">View All</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table" id="activityTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>User</th>
+                                        <th>Activity</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="empty-state">
+                                                <div class="empty-state-icon">📊</div>
+                                                <h4 class="empty-state-title">No Activity Yet</h4>
+                                                <p class="empty-state-text">Recent activities will appear here</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Recent Activity -->
-                <div class="section">
-                    <div class="section-header">
-                        <h2>Recent Activity</h2>
-                        <div class="section-actions">
-                            <button class="btn btn-sm btn-outline" onclick="refreshDashboard()">
-                                🔄 Refresh
-                            </button>
-                        </div>
+                <!-- System Info Card -->
+                <div class="card mt-6">
+                    <div class="card-header">
+                        <h3>System Information</h3>
                     </div>
-                    
-                    <div class="table-container">
-                        <table id="activityTable">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>User</th>
-                                    <th>Activity</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="empty-state">
-                                            <div class="empty-state-icon">📊</div>
-                                            <h3>No Activity Yet</h3>
-                                            <p>Recent activities will appear here</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- System Info -->
-                <div class="section">
-                    <div class="section-header">
-                        <h2>System Information</h2>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                        <div>
-                            <p><strong>App Version:</strong> 1.0.0</p>
-                            <p><strong>Last Updated:</strong> December 2025</p>
-                        </div>
-                        <div>
-                            <p><strong>Active Users:</strong> <span id="activeUsers">-</span></p>
-                            <p><strong>System Status:</strong> <span class="badge badge-success">Online</span></p>
+                    <div class="card-body">
+                        <div class="grid-2">
+                            <div>
+                                <p class="mb-2"><strong>App Version:</strong> 1.0.0</p>
+                                <p class="mb-0"><strong>Last Updated:</strong> December 2025</p>
+                            </div>
+                            <div>
+                                <p class="mb-2"><strong>Active Users:</strong> <span id="activeUsers">-</span></p>
+                                <p class="mb-0"><strong>System Status:</strong> <span class="badge badge-success badge-dot">Online</span></p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -185,13 +224,9 @@
         </main>
     </div>
     
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
     <script src="../config.js"></script>
     <script src="../assets/js/common.js"></script>
     <script src="../assets/js/admin-common.js"></script>
     <script src="../assets/js/admin-dashboard.js"></script>
 </body>
 </html>
-
