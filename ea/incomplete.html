@@ -1,1 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incomplete Requirements - HRMS EA</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🏢 HRMS EA</h2>
+                <p>N.T Woods Pvt. Ltd.</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="menu-item-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="raise-requirement.html" class="menu-item">
+                    <span class="menu-item-icon">➕</span>
+                    <span>Raise Requirement</span>
+                </a>
+                <a href="incomplete.html" class="menu-item active">
+                    <span class="menu-item-icon">⚠️</span>
+                    <span>Incomplete</span>
+                </a>
+                <a href="view-requirements.html" class="menu-item">
+                    <span class="menu-item-icon">📋</span>
+                    <span>View Requirements</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">E</div>
+                    <div class="user-details">
+                        <h4 id="userName">EA User</h4>
+                        <p id="userRole">Executive Assistant</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary w-100" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                    <div class="page-title">
+                        <h1>Incomplete Requirements</h1>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <button class="notification-icon">
+                        🔔
+                        <span class="notification-badge">3</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>⚠️ Requirements Sent Back by HR</h3>
+                        <span id="requirementCount" class="badge">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="loadingSpinner" class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading incomplete requirements...</p>
+                        </div>
+                        <div id="requirementsTableContainer" style="display: none;">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Req ID</th>
+                                            <th>Job Title</th>
+                                            <th>Role</th>
+                                            <th>Raised Date</th>
+                                            <th>HR Remark</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="requirementsTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="emptyState" style="display: none;">
+                            <div class="empty-state">
+                                <span style="font-size: 4rem;">✅</span>
+                                <h3>No Incomplete Requirements</h3>
+                                <p>All your requirements are either approved or pending review!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth().then(user => {
+                currentUser = user;
+                loadIncompleteRequirements();
+            });
+        });
+
+        async function loadIncompleteRequirements() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('requirementsTableContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingSpinner.style.display = 'block';
+            tableContainer.style.display = 'none';
+            emptyState.style.display = 'none';
+
+            try {
+                const response = await apiCall('getIncompleteRequirements', {});
+                
+                if (response.success && response.requirements) {
+                    displayRequirements(response.requirements);
+                } else {
+                    throw new Error(response.message || 'Failed to load requirements');
+                }
+            } catch (error) {
+                console.error('Error loading requirements:', error);
+                showToast('Failed to load requirements: ' + error.message, 'error');
+                loadingSpinner.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        function displayRequirements(requirements) {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('requirementsTableContainer');
+            const emptyState = document.getElementById('emptyState');
+            const tbody = document.getElementById('requirementsTableBody');
+            const countBadge = document.getElementById('requirementCount');
+
+            loadingSpinner.style.display = 'none';
+            countBadge.textContent = requirements.length;
+
+            if (requirements.length === 0) {
+                emptyState.style.display = 'block';
+                tableContainer.style.display = 'none';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            requirements.forEach((req) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${req.id}</td>
+                    <td>${req.jobTitle || req.jobRole}</td>
+                    <td><span class="badge badge-info">${req.jobRole}</span></td>
+                    <td>${formatDate(req.raisedDate)}</td>
+                    <td><span class="text-danger">${req.hrRemark || 'N/A'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editRequirement('${req.id}')">✏️ Edit</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            tableContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+        }
+
+        function editRequirement(reqId) {
+            window.location.href = `raise-requirement.html?id=${reqId}`;
+        }
+    </script>
+</body>
+</html>
 
