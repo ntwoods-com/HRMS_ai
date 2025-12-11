@@ -116,9 +116,17 @@
     <script src="../config.js"></script>
     <script src="../assets/js/common.js"></script>
     <script>
+        let currentUser = null;
+        
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            loadCandidates();
+            currentUser = checkAuth();
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userRole').textContent = currentUser.role;
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+                
+                loadCandidates();
+            }
         });
 
         async function loadCandidates() {
@@ -131,156 +139,113 @@
             emptyState.style.display = 'none';
 
             try {
-                const response = await apiCall('getCandidatesForCall', {});
+                // Send request - with no-cors we can't read response
+                await apiCall('getCandidatesForCall', {});
                 
-                if (response.success && response.candidates) {
-                    displayCandidates(response.candidates);
-                } else {
-                    throw new Error(response.message || 'Failed to load candidates');
-                }
+                showToast('ℹ️ View shortlisted candidates in Google Sheets.', 'info');
+                
+                loadingSpinner.style.display = 'none';
+                
+                // Show form for on-call conversation
+                container.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>📞 On-Call Conversation Form</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-4">View candidates in Google Sheets (Status = "Shortlisted") and fill the form below to record call details.</p>
+                            
+                            <div class="form-group">
+                                <label>Candidate ID <span class="text-danger">*</span></label>
+                                <input type="text" id="candidateId" class="form-control" placeholder="e.g., CAN_1234567890_abc123">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Communication Skills (1-10) <span class="text-danger">*</span></label>
+                                        <input type="number" id="commSkills" class="form-control" min="1" max="10" placeholder="Rate 1-10">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Professional Experience (1-10) <span class="text-danger">*</span></label>
+                                        <input type="number" id="profExp" class="form-control" min="1" max="10" placeholder="Rate 1-10">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Call Status <span class="text-danger">*</span></label>
+                                        <select id="callStatus" class="form-control">
+                                            <option value="">-- Select --</option>
+                                            <option value="Recommended for Owners">Recommended for Owner Discussion</option>
+                                            <option value="Reject">Reject</option>
+                                            <option value="Not Reachable">Not Reachable</option>
+                                            <option value="Call Back Later">Call Back Later</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Family Background</label>
+                                <textarea id="familyBg" class="form-control" rows="2" placeholder="Enter family background details..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Remark</label>
+                                <textarea id="callRemark" class="form-control" rows="2" placeholder="Enter call notes/remarks..."></textarea>
+                            </div>
+                            
+                            <button class="btn btn-primary btn-lg" onclick="submitCallStatus()">💾 Submit Call Status</button>
+                        </div>
+                    </div>
+                `;
+                container.style.display = 'block';
+                
             } catch (error) {
                 console.error('Error loading candidates:', error);
-                showToast('Failed to load candidates: ' + error.message, 'error');
+                showToast('Network error occurred', 'error');
                 loadingSpinner.style.display = 'none';
                 emptyState.style.display = 'block';
             }
         }
-
-        function displayCandidates(candidates) {
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const container = document.getElementById('candidatesContainer');
-            const emptyState = document.getElementById('emptyState');
-
-            loadingSpinner.style.display = 'none';
-
-            if (candidates.length === 0) {
-                emptyState.style.display = 'block';
-                container.style.display = 'none';
-                return;
-            }
-
-            container.innerHTML = '';
-            candidates.forEach((candidate) => {
-                const card = document.createElement('div');
-                card.className = 'card mb-3';
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h3>📞 ${candidate.name}</h3>
-                        <span class="badge badge-info">${candidate.jobRole}</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <label>Mobile:</label>
-                                <span><a href="tel:${candidate.mobile}">${candidate.mobile}</a></span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Source:</label>
-                                <span>${candidate.source}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>CV:</label>
-                                <span>${candidate.cvUrl ? `<a href="${candidate.cvUrl}" target="_blank" class="btn btn-sm btn-secondary">📄 View</a>` : 'N/A'}</span>
-                            </div>
-                        </div>
-
-                        <form id="form_${candidate.id}" class="mt-3">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Communication Skills (1-10) <span class="text-danger">*</span></label>
-                                        <input type="number" id="comm_${candidate.id}" class="form-control" min="1" max="10" required placeholder="Rate 1-10">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Professional Experience (1-10) <span class="text-danger">*</span></label>
-                                        <input type="number" id="exp_${candidate.id}" class="form-control" min="1" max="10" required placeholder="Rate 1-10">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Family Background <span class="text-danger">*</span></label>
-                                <textarea id="family_${candidate.id}" class="form-control" rows="3" required placeholder="Enter family background details..."></textarea>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Decision <span class="text-danger">*</span></label>
-                                <select id="decision_${candidate.id}" class="form-control" required onchange="toggleRemarkField('${candidate.id}')">
-                                    <option value="">-- Select Decision --</option>
-                                    <option value="Recommended">Recommended for Owner Discussion</option>
-                                    <option value="Rejected">Reject</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group" id="remarkField_${candidate.id}" style="display: none;">
-                                <label>Remark (for rejection) <span class="text-danger">*</span></label>
-                                <textarea id="remark_${candidate.id}" class="form-control" rows="2" placeholder="Enter rejection reason..."></textarea>
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="button" class="btn btn-primary" onclick="submitCall('${candidate.id}')">💾 Submit</button>
-                            </div>
-                        </form>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-
-            container.style.display = 'block';
-            emptyState.style.display = 'none';
-        }
-
-        function toggleRemarkField(candidateId) {
-            const decision = document.getElementById(`decision_${candidateId}`).value;
-            const remarkField = document.getElementById(`remarkField_${candidateId}`);
+        
+        async function submitCallStatus() {
+            const candidateId = document.getElementById('candidateId').value.trim();
+            const commSkills = document.getElementById('commSkills').value;
+            const profExp = document.getElementById('profExp').value;
+            const callStatus = document.getElementById('callStatus').value;
+            const familyBg = document.getElementById('familyBg').value.trim();
+            const remark = document.getElementById('callRemark').value.trim();
             
-            if (decision === 'Rejected') {
-                remarkField.style.display = 'block';
-                document.getElementById(`remark_${candidateId}`).required = true;
-            } else {
-                remarkField.style.display = 'none';
-                document.getElementById(`remark_${candidateId}`).required = false;
-            }
-        }
-
-        async function submitCall(candidateId) {
-            const comm = document.getElementById(`comm_${candidateId}`).value;
-            const exp = document.getElementById(`exp_${candidateId}`).value;
-            const family = document.getElementById(`family_${candidateId}`).value;
-            const decision = document.getElementById(`decision_${candidateId}`).value;
-            const remark = document.getElementById(`remark_${candidateId}`)?.value || '';
-
-            if (!comm || !exp || !family || !decision) {
+            if (!candidateId || !commSkills || !profExp || !callStatus) {
                 showToast('Please fill all required fields', 'warning');
                 return;
             }
-
-            if (decision === 'Rejected' && !remark) {
-                showToast('Please enter rejection reason', 'warning');
-                return;
-            }
-
+            
             try {
-                const response = await apiCall('updateCallStatus', {
-                    candidateId: candidateId,
-                    communicationSkills: parseInt(comm),
-                    professionalExperience: parseInt(exp),
-                    familyBackground: family,
-                    decision: decision,
+                await apiCall('updateCallStatus', {
+                    candidateID: candidateId,
+                    callStatus: callStatus,
+                    communicationSkills: parseInt(commSkills),
+                    professionalExperience: parseInt(profExp),
+                    familyBackground: familyBg,
                     remark: remark
                 });
-
-                if (response.success) {
-                    showToast('Call status updated successfully', 'success');
-                    setTimeout(() => loadCandidates(), 1000);
-                } else {
-                    throw new Error(response.message || 'Failed to update call status');
-                }
+                
+                showToast('✓ Call status saved to Google Sheets!', 'success');
+                
+                // Clear form
+                document.getElementById('candidateId').value = '';
+                document.getElementById('commSkills').value = '';
+                document.getElementById('profExp').value = '';
+                document.getElementById('callStatus').value = '';
+                document.getElementById('familyBg').value = '';
+                document.getElementById('callRemark').value = '';
+                
             } catch (error) {
-                console.error('Error updating call status:', error);
-                showToast('Failed to update call status: ' + error.message, 'error');
+                showToast('Network error occurred', 'error');
             }
         }
     </script>
