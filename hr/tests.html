@@ -1,1 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Management - HRMS HR</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🏢 HRMS HR</h2>
+                <p>N.T Woods Pvt. Ltd.</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="menu-item-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="review.html" class="menu-item">
+                    <span class="menu-item-icon">✓</span>
+                    <span>Review Requirements</span>
+                </a>
+                <a href="job-posting.html" class="menu-item">
+                    <span class="menu-item-icon">📢</span>
+                    <span>Job Posting</span>
+                </a>
+                <a href="upload-cv.html" class="menu-item">
+                    <span class="menu-item-icon">📄</span>
+                    <span>Upload CVs</span>
+                </a>
+                <a href="shortlisting.html" class="menu-item">
+                    <span class="menu-item-icon">✂️</span>
+                    <span>Shortlisting</span>
+                </a>
+                <a href="on-call.html" class="menu-item">
+                    <span class="menu-item-icon">📞</span>
+                    <span>On-Call Conversation</span>
+                </a>
+                <a href="owner-discussion.html" class="menu-item">
+                    <span class="menu-item-icon">💼</span>
+                    <span>Owner Discussion</span>
+                </a>
+                <a href="scheduling.html" class="menu-item">
+                    <span class="menu-item-icon">📅</span>
+                    <span>Interview Scheduling</span>
+                </a>
+                <a href="walk-ins.html" class="menu-item">
+                    <span class="menu-item-icon">🚶</span>
+                    <span>Walk-ins</span>
+                </a>
+                <a href="tests.html" class="menu-item active">
+                    <span class="menu-item-icon">✏️</span>
+                    <span>Test Management</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">H</div>
+                    <div class="user-details">
+                        <h4 id="userName">HR User</h4>
+                        <p id="userRole">Human Resources</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary w-100" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                    <div class="page-title">
+                        <h1>Test Management (HR)</h1>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <button class="notification-icon">
+                        🔔
+                        <span class="notification-badge">7</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Filter -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🔍 Filter by Role</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label>Job Role</label>
+                                <select id="roleFilter" class="form-control">
+                                    <option value="">All Roles</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary w-100" onclick="loadCandidates()">Apply Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Marks Table -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3>✏️ Update HR Interview Marks & Excel Marks</h3>
+                        <span id="candidateCount" class="badge">0</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-info mb-3"><strong>Note:</strong> HR can only update HR Interview Marks and Excel Marks. Other test marks are managed by Admin/EA.</p>
+                        <div id="loadingSpinner" class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading candidates...</p>
+                        </div>
+                        <div id="testsTableContainer" style="display: none;">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Candidate Name</th>
+                                            <th>Role</th>
+                                            <th>Excel Marks</th>
+                                            <th>HR Interview</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="testsTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="emptyState" style="display: none;">
+                            <div class="empty-state">
+                                <span style="font-size: 4rem;">📭</span>
+                                <h3>No Candidates Found</h3>
+                                <p>No candidates available for test marks update.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script>
+        let allCandidates = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            populateRoleFilter();
+            loadCandidates();
+        });
+
+        function populateRoleFilter() {
+            const roleFilter = document.getElementById('roleFilter');
+            CONFIG.JOB_ROLES.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role;
+                option.textContent = role;
+                roleFilter.appendChild(option);
+            });
+        }
+
+        async function loadCandidates() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('testsTableContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingSpinner.style.display = 'block';
+            tableContainer.style.display = 'none';
+            emptyState.style.display = 'none';
+
+            try {
+                const roleFilter = document.getElementById('roleFilter').value;
+                const response = await apiCall('getCandidatesForTest', { role: roleFilter });
+                
+                if (response.success && response.candidates) {
+                    allCandidates = response.candidates;
+                    displayCandidates(allCandidates);
+                } else {
+                    throw new Error(response.message || 'Failed to load candidates');
+                }
+            } catch (error) {
+                console.error('Error loading candidates:', error);
+                showToast('Failed to load candidates: ' + error.message, 'error');
+                loadingSpinner.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        function displayCandidates(candidates) {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('testsTableContainer');
+            const emptyState = document.getElementById('emptyState');
+            const tbody = document.getElementById('testsTableBody');
+            const countBadge = document.getElementById('candidateCount');
+
+            loadingSpinner.style.display = 'none';
+            countBadge.textContent = candidates.length;
+
+            if (candidates.length === 0) {
+                emptyState.style.display = 'block';
+                tableContainer.style.display = 'none';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            candidates.forEach((candidate) => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${candidate.name}</td>
+                    <td><span class="badge badge-info">${candidate.jobRole}</span></td>
+                    <td>
+                        <input type="number" 
+                               id="excel_${candidate.id}" 
+                               class="form-control" 
+                               min="0" 
+                               max="100" 
+                               value="${candidate.excelMarks || ''}" 
+                               placeholder="0-100"
+                               style="width: 80px;">
+                    </td>
+                    <td>
+                        <input type="number" 
+                               id="hr_${candidate.id}" 
+                               class="form-control" 
+                               min="0" 
+                               max="100" 
+                               value="${candidate.hrInterviewMarks || ''}" 
+                               placeholder="0-100"
+                               style="width: 80px;">
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="saveMarks('${candidate.id}')">💾 Save</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            tableContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+        }
+
+        async function saveMarks(candidateId) {
+            const excelMarks = document.getElementById(`excel_${candidateId}`).value;
+            const hrMarks = document.getElementById(`hr_${candidateId}`).value;
+
+            if (!excelMarks || !hrMarks) {
+                showToast('Excel Marks and HR Interview Marks are required', 'warning');
+                return;
+            }
+
+            try {
+                const response = await apiCall('updateHRInterviewMarks', {
+                    candidateId: candidateId,
+                    excelMarks: parseInt(excelMarks),
+                    hrInterviewMarks: parseInt(hrMarks)
+                });
+
+                if (response.success) {
+                    showToast('Marks updated successfully', 'success');
+                    // Update local data
+                    const candidate = allCandidates.find(c => c.id === candidateId);
+                    if (candidate) {
+                        candidate.excelMarks = parseInt(excelMarks);
+                        candidate.hrInterviewMarks = parseInt(hrMarks);
+                    }
+                } else {
+                    throw new Error(response.message || 'Failed to update marks');
+                }
+            } catch (error) {
+                console.error('Error updating marks:', error);
+                showToast('Failed to update marks: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
 
