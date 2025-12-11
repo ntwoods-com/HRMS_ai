@@ -1,1 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - HRMS</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🏢 HRMS Admin</h2>
+                <p>N.T Woods Pvt. Ltd.</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item active">
+                    <span class="menu-item-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="users.html" class="menu-item">
+                    <span class="menu-item-icon">👥</span>
+                    <span>User Management</span>
+                </a>
+                <a href="permissions.html" class="menu-item">
+                    <span class="menu-item-icon">🔐</span>
+                    <span>Permissions</span>
+                </a>
+                <a href="templates.html" class="menu-item">
+                    <span class="menu-item-icon">📝</span>
+                    <span>Job Templates</span>
+                </a>
+                <a href="requirements.html" class="menu-item">
+                    <span class="menu-item-icon">📋</span>
+                    <span>Requirements</span>
+                </a>
+                <a href="candidates.html" class="menu-item">
+                    <span class="menu-item-icon">👤</span>
+                    <span>Candidates</span>
+                </a>
+                <a href="tests.html" class="menu-item">
+                    <span class="menu-item-icon">✏️</span>
+                    <span>Test Management</span>
+                </a>
+                <a href="reports.html" class="menu-item">
+                    <span class="menu-item-icon">📈</span>
+                    <span>Reports</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <h4 id="userName">Admin User</h4>
+                        <p id="userRole">Administrator</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary w-100" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                    <div class="page-title">
+                        <h1>Dashboard</h1>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <button class="notification-icon">
+                        🔔
+                        <span class="notification-badge">5</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Statistics -->
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            👥
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalUsers">0</h3>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            📋
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalRequirements">0</h3>
+                            <p>Total Requirements</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            👤
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalCandidates">0</h3>
+                            <p>Total Candidates</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon danger">
+                            📝
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalTemplates">0</h3>
+                            <p>Job Templates</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Recent Activity</h2>
+                        <div class="section-actions">
+                            <button class="btn btn-sm btn-outline" onclick="refreshDashboard()">
+                                🔄 Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="activityTable">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>User</th>
+                                    <th>Activity</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-state">
+                                            <div class="empty-state-icon">📊</div>
+                                            <h3>No Activity Yet</h3>
+                                            <p>Recent activities will appear here</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- System Info -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2>System Information</h2>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <div>
+                            <p><strong>App Version:</strong> 1.0.0</p>
+                            <p><strong>Last Updated:</strong> December 2025</p>
+                        </div>
+                        <div>
+                            <p><strong>Active Users:</strong> <span id="activeUsers">-</span></p>
+                            <p><strong>System Status:</strong> <span class="badge badge-success">Online</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <script src="../config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/admin-common.js"></script>
+    <script src="../assets/js/admin-dashboard.js"></script>
+</body>
+</html>
 
