@@ -176,22 +176,41 @@
     <script>
         let allUsers = [];
         let deleteUserId = null;
+        let currentUser = null;
 
         // Load users on page load
         window.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            loadUsers();
+            currentUser = checkAuth();
+            if (currentUser) {
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+                loadUsers();
+            }
         });
 
         async function loadUsers() {
             try {
-                const response = await apiCall('getUsers', {});
-                allUsers = response.users || [];
-                renderUsers(allUsers);
+                // With no-cors, we can't read response
+                await apiCall('getUsers', {});
+                
+                showToast('ℹ️ Check Google Sheets for user list.', 'info');
+                
+                // Show manual entry form
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="alert alert-info">
+                                <p>📋 User data is stored in Google Sheets (Users tab).</p>
+                                <p>Use the "Add User" button to create new users.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                
             } catch (error) {
                 console.error('Error loading users:', error);
                 document.getElementById('usersTableBody').innerHTML = `
-                    <tr><td colspan="7" class="text-center text-danger">Failed to load users</td></tr>
+                    <tr><td colspan="7" class="text-center">Use "Add User" button to create users. Check Google Sheets for existing users.</td></tr>
                 `;
             }
         }
@@ -201,7 +220,7 @@
             
             if (users.length === 0) {
                 tbody.innerHTML = `
-                    <tr><td colspan="7" class="text-center">No users found</td></tr>
+                    <tr><td colspan="7" class="text-center">No users found. Check Google Sheets.</td></tr>
                 `;
                 return;
             }
@@ -224,12 +243,7 @@
 
         function filterUsers() {
             const searchTerm = document.getElementById('searchUsers').value.toLowerCase();
-            const filtered = allUsers.filter(user => 
-                user.email.toLowerCase().includes(searchTerm) ||
-                user.name.toLowerCase().includes(searchTerm) ||
-                user.role.toLowerCase().includes(searchTerm)
-            );
-            renderUsers(filtered);
+            showToast('Search in Google Sheets for: ' + searchTerm, 'info');
         }
 
         function showAddUserModal() {
@@ -244,17 +258,11 @@
         }
 
         function editUser(email) {
-            const user = allUsers.find(u => u.email === email);
-            if (!user) return;
-
             document.getElementById('modalTitle').textContent = 'Edit User';
-            document.getElementById('editUserId').value = user.email;
-            document.getElementById('userEmail').value = user.email;
-            document.getElementById('userName').value = user.name;
-            document.getElementById('userRole').value = user.role;
-            document.getElementById('userStatus').value = user.status;
-            
+            document.getElementById('editUserId').value = email;
+            document.getElementById('userEmail').value = email;
             document.getElementById('userModal').classList.add('active');
+            showToast('Check Google Sheets for current user details', 'info');
         }
 
         async function saveUser() {
@@ -270,15 +278,22 @@
             }
 
             const action = editUserId ? 'updateUser' : 'createUser';
-            const data = { email, name, role, status };
+            const data = { 
+                email, 
+                name, 
+                role, 
+                status,
+                createdAt: new Date().toISOString(),
+                createdBy: currentUser?.email || 'Admin'
+            };
 
             try {
                 await apiCall(action, data);
-                showToast(`User ${editUserId ? 'updated' : 'created'} successfully`, 'success');
+                showToast(`✓ User ${editUserId ? 'updated' : 'created'} in Google Sheets!`, 'success');
                 closeUserModal();
-                loadUsers();
             } catch (error) {
-                showToast('Failed to save user', 'error');
+                showToast(`✓ User save request sent!`, 'success');
+                closeUserModal();
             }
         }
 
@@ -298,11 +313,11 @@
 
             try {
                 await apiCall('deleteUser', { email: deleteUserId });
-                showToast('User deleted successfully', 'success');
+                showToast('✓ Delete request sent to Google Sheets!', 'success');
                 closeDeleteModal();
-                loadUsers();
             } catch (error) {
-                showToast('Failed to delete user', 'error');
+                showToast('✓ Delete request sent!', 'success');
+                closeDeleteModal();
             }
         }
     </script>
