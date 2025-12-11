@@ -217,11 +217,20 @@
         });
         
         async function loadDashboard() {
-            // Simulate loading data
-            document.getElementById('totalRequirements').textContent = '5';
-            document.getElementById('incompleteRequirements').textContent = '2';
-            document.getElementById('validRequirements').textContent = '3';
-            document.getElementById('totalCandidates').textContent = '15';
+            // Show placeholder stats
+            // Note: With no-cors, we can only send data, not retrieve
+            document.getElementById('totalRequirements').textContent = '-';
+            document.getElementById('incompleteRequirements').textContent = '-';
+            document.getElementById('validRequirements').textContent = '-';
+            document.getElementById('totalCandidates').textContent = '-';
+            
+            // Send request to get stats (can't read response with no-cors)
+            try {
+                await apiCall('getDashboardStats', {});
+                showToast('ℹ️ Dashboard connected! Check Google Sheets for live data.', 'info');
+            } catch (error) {
+                console.error('Dashboard error:', error);
+            }
         }
     </script>
 </body>
