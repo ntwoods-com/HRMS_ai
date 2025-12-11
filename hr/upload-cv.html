@@ -167,30 +167,33 @@
     <script>
         let parsedCVs = [];
         let selectedJob = null;
+        let currentUser = null;
 
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            loadPostedJobs();
+            currentUser = checkAuth();
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userRole').textContent = currentUser.role;
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+                
+                loadPostedJobs();
+            }
         });
 
         async function loadPostedJobs() {
-            try {
-                const response = await apiCall('getRequirements', { status: 'Posted' });
-                
-                if (response.success && response.requirements) {
-                    const select = document.getElementById('jobId');
-                    response.requirements.forEach(req => {
-                        const option = document.createElement('option');
-                        option.value = req.id;
-                        option.textContent = `#${req.id} - ${req.jobRole}`;
-                        option.dataset.role = req.jobRole;
-                        select.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading jobs:', error);
-                showToast('Failed to load posted jobs: ' + error.message, 'error');
-            }
+            // With no-cors, add manual job options
+            const select = document.getElementById('jobId');
+            
+            // Add common job roles as options
+            HRMS_CONFIG.JOB_ROLES.forEach((role, index) => {
+                const option = document.createElement('option');
+                option.value = `JOB_${role.replace(/\s+/g, '_').toUpperCase()}`;
+                option.textContent = `${role} Position`;
+                option.dataset.role = role;
+                select.appendChild(option);
+            });
+            
+            showToast('ℹ️ Select job role and upload CVs. Data will be saved to Google Sheets.', 'info');
         }
 
         function parseFiles() {
@@ -292,33 +295,31 @@
 
             try {
                 for (const cv of validCVs) {
-                    // In real implementation, upload file to Google Drive first
-                    const cvUrl = 'CV_URL_PLACEHOLDER';
-
-                    const response = await apiCall('uploadCV', {
-                        requirementId: jobId,
+                    // Note: With no-cors, we send data but can't verify response
+                    await apiCall('uploadCV', {
+                        jobID: jobId,
                         name: cv.name,
                         mobile: cv.mobile,
                         source: cv.source,
                         jobRole: cv.jobRole,
-                        cvUrl: cvUrl
+                        cvUrl: 'Pending Upload - ' + cv.fileName,
+                        uploadedBy: currentUser ? currentUser.email : 'HR'
                     });
-
-                    if (!response.success) {
-                        throw new Error(`Failed to upload CV for ${cv.name}: ${response.message}`);
-                    }
 
                     uploaded++;
                     const progress = Math.round((uploaded / total) * 100);
                     progressBar.style.width = progress + '%';
                     progressBar.textContent = progress + '%';
+                    
+                    // Small delay between uploads
+                    await new Promise(resolve => setTimeout(resolve, 200));
                 }
 
-                showToast(`Successfully uploaded ${uploaded} CVs`, 'success');
+                showToast(`✓ ${uploaded} CVs data sent to Google Sheets!`, 'success');
                 setTimeout(() => resetForm(), 2000);
             } catch (error) {
                 console.error('Error uploading CVs:', error);
-                showToast('Failed to upload CVs: ' + error.message, 'error');
+                showToast('Network error: ' + error.message, 'error');
             } finally {
                 submitText.style.display = 'inline';
                 submitLoader.style.display = 'none';
