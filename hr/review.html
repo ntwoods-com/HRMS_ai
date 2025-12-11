@@ -126,35 +126,24 @@
             const container = document.getElementById('requirementsContainer');
             const emptyState = document.getElementById('emptyState');
 
-            loadingSpinner.style.display = 'none';
-            
-            // Show message with Google Sheet link (CORS issue workaround)
-            const messageCard = document.createElement('div');
-            messageCard.className = 'card';
-            messageCard.innerHTML = `
-                <div class="card-body" style="text-align: center; padding: 3rem;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
-                    <h3>View Requirements in Google Sheet</h3>
-                    <p style="color: var(--text-muted); margin: 1rem 0;">
-                        Due to browser CORS restrictions, requirements data cannot be displayed here.<br>
-                        Please click below to view all pending requirements in Google Sheet.
-                    </p>
-                    <a href="https://docs.google.com/spreadsheets/d/${HRMS_CONFIG.SPREADSHEET_ID || 'YOUR_SHEET_ID'}/edit#gid=0" 
-                       target="_blank" class="btn btn-primary" style="margin: 1rem;">
-                        📋 Open Requirements Sheet
-                    </a>
-                    <div class="alert alert-info" style="margin-top: 2rem; text-align: left;">
-                        <strong>💡 Quick Guide:</strong><br>
-                        • Sheet Name: <strong>Requirements</strong><br>
-                        • Filter by Status: <strong>Pending Review</strong><br>
-                        • Review requirements and add HR Remark<br>
-                        • Change Status to <strong>Valid</strong> or <strong>Incomplete</strong><br><br>
-                        <em>All write operations (approving/rejecting requirements) work perfectly through the web interface!</em>
-                    </div>
-                </div>
-            `;
-            container.appendChild(messageCard);
-            container.style.display = 'block';
+            loadingSpinner.style.display = 'block';
+            container.style.display = 'none';
+            emptyState.style.display = 'none';
+
+            try {
+                const response = await apiCall('getRequirementsForReview', {});
+                
+                if (response.success && response.requirements) {
+                    displayRequirements(response.requirements);
+                } else {
+                    throw new Error(response.message || 'Failed to load requirements');
+                }
+            } catch (error) {
+                console.error('Error loading requirements:', error);
+                showToast('Failed to load requirements: ' + error.message, 'error');
+                loadingSpinner.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
         }
 
         function displayRequirements(requirements) {
