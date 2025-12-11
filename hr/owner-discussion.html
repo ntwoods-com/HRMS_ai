@@ -138,9 +138,17 @@
     <script src="../config.js"></script>
     <script src="../assets/js/common.js"></script>
     <script>
+        let currentUser = null;
+        
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            loadCandidates();
+            currentUser = checkAuth();
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userRole').textContent = currentUser.role;
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+                
+                loadCandidates();
+            }
         });
 
         async function loadCandidates() {
@@ -153,106 +161,98 @@
             emptyState.style.display = 'none';
 
             try {
-                const response = await apiCall('getCandidatesForOwner', {});
+                // With no-cors, we can't read response
+                await apiCall('getCandidatesForOwner', {});
                 
-                if (response.success && response.candidates) {
-                    displayCandidates(response.candidates);
-                } else {
-                    throw new Error(response.message || 'Failed to load candidates');
-                }
+                showToast('ℹ️ View recommended candidates in Google Sheets.', 'info');
+                
+                loadingSpinner.style.display = 'none';
+                
+                // Show decision form
+                container.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>💼 Owner Decision Form</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-4">Check Google Sheets for candidates with "Recommended for Owners" status. Use this form to record owner's decision.</p>
+                            
+                            <div class="form-group">
+                                <label>Candidate ID <span class="text-danger">*</span></label>
+                                <input type="text" id="candidateId" class="form-control" placeholder="e.g., CAN_1234567890_abc123">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Owner Decision <span class="text-danger">*</span></label>
+                                <select id="ownerDecision" class="form-control" onchange="toggleRemarkRequired()">
+                                    <option value="">-- Select Decision --</option>
+                                    <option value="Approved for Walk-in">✓ Approve for Walk-in Interview</option>
+                                    <option value="Hold">⏸ Hold</option>
+                                    <option value="Reject">✕ Reject</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Remark <span id="remarkRequired" class="text-danger" style="display: none;">*</span></label>
+                                <textarea id="ownerRemark" class="form-control" rows="3" placeholder="Enter owner's feedback or reason..."></textarea>
+                            </div>
+                            
+                            <button class="btn btn-primary btn-lg" onclick="submitOwnerDecision()">💾 Submit Decision</button>
+                        </div>
+                    </div>
+                `;
+                container.style.display = 'block';
+                
             } catch (error) {
                 console.error('Error loading candidates:', error);
-                showToast('Failed to load candidates: ' + error.message, 'error');
+                showToast('Network error occurred', 'error');
                 loadingSpinner.style.display = 'none';
                 emptyState.style.display = 'block';
             }
         }
-
-        function displayCandidates(candidates) {
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const container = document.getElementById('candidatesContainer');
-            const emptyState = document.getElementById('emptyState');
-
-            loadingSpinner.style.display = 'none';
-
-            if (candidates.length === 0) {
-                emptyState.style.display = 'block';
-                container.style.display = 'none';
-                return;
+        
+        function toggleRemarkRequired() {
+            const decision = document.getElementById('ownerDecision').value;
+            const remarkRequired = document.getElementById('remarkRequired');
+            
+            if (decision === 'Hold' || decision === 'Reject') {
+                remarkRequired.style.display = 'inline';
+            } else {
+                remarkRequired.style.display = 'none';
             }
-
-            container.innerHTML = '';
-            candidates.forEach((candidate) => {
-                const card = document.createElement('div');
-                card.className = 'card mb-3';
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h3>💼 ${candidate.name}</h3>
-                        <span class="badge badge-info">${candidate.jobRole}</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <label>Mobile:</label>
-                                <span><a href="tel:${candidate.mobile}">${candidate.mobile}</a></span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Source:</label>
-                                <span>${candidate.source}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Communication:</label>
-                                <span>${candidate.communicationSkills}/10</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Experience:</label>
-                                <span>${candidate.professionalExperience}/10</span>
-                            </div>
-                            <div class="detail-item" style="grid-column: 1/-1;">
-                                <label>Family Background:</label>
-                                <span>${candidate.familyBackground}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>CV:</label>
-                                <span>${candidate.cvUrl ? `<a href="${candidate.cvUrl}" target="_blank" class="btn btn-sm btn-secondary">📄 View</a>` : 'N/A'}</span>
-                            </div>
-                        </div>
-
-                        <div class="form-actions mt-3">
-                            <button class="btn btn-success" onclick="approveForWalkIn('${candidate.id}')">✓ Approve for Walk-in</button>
-                            <button class="btn btn-warning" onclick="openRemarkModal('${candidate.id}', 'Hold')">⏸ Hold</button>
-                            <button class="btn btn-danger" onclick="openRemarkModal('${candidate.id}', 'Reject')">✕ Reject</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-
-            container.style.display = 'block';
-            emptyState.style.display = 'none';
         }
-
-        async function approveForWalkIn(candidateId) {
-            if (!confirm('Are you sure you want to approve this candidate for walk-in interview?')) {
+        
+        async function submitOwnerDecision() {
+            const candidateId = document.getElementById('candidateId').value.trim();
+            const decision = document.getElementById('ownerDecision').value;
+            const remark = document.getElementById('ownerRemark').value.trim();
+            
+            if (!candidateId || !decision) {
+                showToast('Please fill all required fields', 'warning');
                 return;
             }
-
+            
+            if ((decision === 'Hold' || decision === 'Reject') && !remark) {
+                showToast('Please enter a remark for Hold/Reject', 'warning');
+                return;
+            }
+            
             try {
-                const response = await apiCall('updateOwnerDecision', {
-                    candidateId: candidateId,
-                    decision: 'Approved',
-                    remark: ''
+                await apiCall('updateOwnerDecision', {
+                    candidateID: candidateId,
+                    ownerDecision: decision,
+                    remark: remark
                 });
-
-                if (response.success) {
-                    showToast('Candidate approved for walk-in', 'success');
-                    loadCandidates();
-                } else {
-                    throw new Error(response.message || 'Failed to approve candidate');
-                }
+                
+                showToast('✓ Owner decision saved to Google Sheets!', 'success');
+                
+                // Clear form
+                document.getElementById('candidateId').value = '';
+                document.getElementById('ownerDecision').value = '';
+                document.getElementById('ownerRemark').value = '';
+                
             } catch (error) {
-                console.error('Error approving candidate:', error);
-                showToast('Failed to approve candidate: ' + error.message, 'error');
+                showToast('Network error occurred', 'error');
             }
         }
 
@@ -266,36 +266,6 @@
 
         function closeRemarkModal() {
             document.getElementById('remarkModal').style.display = 'none';
-        }
-
-        async function confirmRemark() {
-            const candidateId = document.getElementById('remarkCandidateId').value;
-            const action = document.getElementById('remarkAction').value;
-            const remark = document.getElementById('remarkText').value.trim();
-
-            if (!remark) {
-                showToast('Please enter a remark', 'warning');
-                return;
-            }
-
-            try {
-                const response = await apiCall('updateOwnerDecision', {
-                    candidateId: candidateId,
-                    decision: action === 'Reject' ? 'Rejected' : 'Hold',
-                    remark: remark
-                });
-
-                if (response.success) {
-                    showToast(`Candidate ${action.toLowerCase()}ed successfully`, 'success');
-                    closeRemarkModal();
-                    loadCandidates();
-                } else {
-                    throw new Error(response.message || `Failed to ${action.toLowerCase()} candidate`);
-                }
-            } catch (error) {
-                console.error(`Error ${action.toLowerCase()}ing candidate:`, error);
-                showToast(`Failed to ${action.toLowerCase()} candidate: ` + error.message, 'error');
-            }
         }
     </script>
 </body>
