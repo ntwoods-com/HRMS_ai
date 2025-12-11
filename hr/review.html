@@ -131,7 +131,7 @@
             emptyState.style.display = 'none';
 
             try {
-                // Use apiGet for reading data
+                // Use apiGet for reading data (without no-cors)
                 const response = await apiGet('getRequirementsForReview');
                 
                 if (response.success && response.data) {
