@@ -184,16 +184,23 @@
     <script src="../assets/js/common.js"></script>
     <script>
         let allCandidates = [];
+        let currentUser = null;
 
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            populateFilters();
-            loadCandidates();
+            currentUser = checkAuth();
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userRole').textContent = currentUser.role;
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+                
+                populateFilters();
+                loadCandidates();
+            }
         });
 
         function populateFilters() {
             const jobFilter = document.getElementById('jobFilter');
-            CONFIG.JOB_ROLES.forEach(role => {
+            HRMS_CONFIG.JOB_ROLES.forEach(role => {
                 const option = document.createElement('option');
                 option.value = role;
                 option.textContent = role;
@@ -201,7 +208,7 @@
             });
 
             const sourceFilter = document.getElementById('sourceFilter');
-            CONFIG.JOB_PORTALS.forEach(portal => {
+            HRMS_CONFIG.JOB_PORTALS.forEach(portal => {
                 const option = document.createElement('option');
                 option.value = portal;
                 option.textContent = portal;
@@ -219,26 +226,77 @@
             emptyState.style.display = 'none';
 
             try {
-                const jobFilter = document.getElementById('jobFilter').value;
-                const sourceFilter = document.getElementById('sourceFilter').value;
-
-                const response = await apiCall('getCandidates', { 
-                    status: 'Uploaded',
-                    jobRole: jobFilter || undefined,
-                    source: sourceFilter || undefined
-                });
+                // Send request - with no-cors we can't read response
+                await apiCall('getCandidates', { status: 'CV Uploaded' });
                 
-                if (response.success && response.candidates) {
-                    allCandidates = response.candidates;
-                    displayCandidates(allCandidates);
-                } else {
-                    throw new Error(response.message || 'Failed to load candidates');
-                }
+                showToast('ℹ️ Candidate data is in Google Sheets. Use forms below to shortlist.', 'info');
+                
+                loadingSpinner.style.display = 'none';
+                
+                // Show info message
+                emptyState.innerHTML = `
+                    <div class="empty-state">
+                        <span style="font-size: 4rem;">📋</span>
+                        <h3>Candidates Data in Google Sheets</h3>
+                        <p>View candidates in the Candidates sheet.<br>
+                        Use the shortlist form below to approve/reject candidates.</p>
+                        
+                        <div class="card mt-4" style="max-width: 500px; margin: 0 auto; text-align: left;">
+                            <div class="card-header"><h4>Quick Shortlist Form</h4></div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>Candidate ID</label>
+                                    <input type="text" id="quickCandidateId" class="form-control" placeholder="e.g., CAN_1234567890_abc123">
+                                </div>
+                                <div class="form-group">
+                                    <label>Decision</label>
+                                    <select id="quickDecision" class="form-control">
+                                        <option value="Approve">✓ Approve (Shortlist)</option>
+                                        <option value="Reject">✕ Reject</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Remark</label>
+                                    <textarea id="quickRemark" class="form-control" rows="2" placeholder="Optional remark..."></textarea>
+                                </div>
+                                <button class="btn btn-primary btn-block" onclick="quickShortlist()">Submit Decision</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                emptyState.style.display = 'block';
+                
             } catch (error) {
                 console.error('Error loading candidates:', error);
-                showToast('Failed to load candidates: ' + error.message, 'error');
+                showToast('Network error occurred', 'error');
                 loadingSpinner.style.display = 'none';
                 emptyState.style.display = 'block';
+            }
+        }
+        
+        async function quickShortlist() {
+            const candidateId = document.getElementById('quickCandidateId').value.trim();
+            const decision = document.getElementById('quickDecision').value;
+            const remark = document.getElementById('quickRemark').value.trim();
+            
+            if (!candidateId) {
+                showToast('Please enter Candidate ID', 'warning');
+                return;
+            }
+            
+            try {
+                await apiCall('shortlistCandidate', {
+                    candidateID: candidateId,
+                    decision: decision,
+                    remark: remark
+                });
+                
+                showToast('✓ Shortlist decision sent to Google Sheets!', 'success');
+                document.getElementById('quickCandidateId').value = '';
+                document.getElementById('quickRemark').value = '';
+                
+            } catch (error) {
+                showToast('Network error occurred', 'error');
             }
         }
 
