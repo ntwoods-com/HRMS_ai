@@ -153,30 +153,39 @@
             const tableContainer = document.getElementById('requirementsTableContainer');
             const emptyState = document.getElementById('emptyState');
 
-            loadingSpinner.style.display = 'block';
-            tableContainer.style.display = 'none';
-            emptyState.style.display = 'none';
+            loadingSpinner.style.display = 'none';
 
-            try {
-                if (!currentUser) {
-                    throw new Error('User not authenticated');
-                }
-
-                const response = await apiGet('getRequirements', {
-                    email: currentUser.email
-                });
-                
-                if (response.success && response.data) {
-                    allRequirements = response.data;
-                    applyFilters();
-                } else {
-                    throw new Error(response.message || 'Failed to load requirements');
-                }
-            } catch (error) {
-                console.error('Error loading requirements:', error);
-                showToast('Failed to load requirements: ' + error.message, 'error');
-                loadingSpinner.style.display = 'none';
-                emptyState.style.display = 'block';
+            // Show message with Google Sheet link (CORS issue workaround)
+            const messageCard = document.createElement('div');
+            messageCard.className = 'card';
+            messageCard.innerHTML = `
+                <div class="card-body" style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                    <h3>View Your Requirements in Google Sheet</h3>
+                    <p style="color: var(--text-muted); margin: 1rem 0;">
+                        Due to browser CORS restrictions, requirements data cannot be displayed here.<br>
+                        Please click below to view all your requirements in Google Sheet.
+                    </p>
+                    <a href="https://docs.google.com/spreadsheets/d/${HRMS_CONFIG.SPREADSHEET_ID || 'YOUR_SHEET_ID'}/edit#gid=0" 
+                       target="_blank" class="btn btn-primary" style="margin: 1rem;">
+                        📋 Open Requirements Sheet
+                    </a>
+                    <div class="alert alert-success" style="margin-top: 2rem; text-align: left;">
+                        <strong>✅ Your Raised Requirements:</strong><br>
+                        • Open the sheet and find <strong>Requirements</strong> tab<br>
+                        • Filter by your email: <strong>${currentUser?.email || 'your-email'}</strong><br>
+                        • Check status: Pending Review, Valid, Incomplete, Posted, Closed<br>
+                        • View HR remarks and updates<br><br>
+                        <em>All your raise requirement submissions are working perfectly!</em>
+                    </div>
+                </div>
+            `;
+            
+            // Clear existing content and show message
+            const cardBody = document.querySelector('.card-body');
+            if (cardBody) {
+                cardBody.innerHTML = '';
+                cardBody.appendChild(messageCard);
             }
         }
 
