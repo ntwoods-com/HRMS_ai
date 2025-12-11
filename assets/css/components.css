@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Dashboard - HRMS</title>
+    <!-- Enhanced CSS -->
+    <link rel="stylesheet" href="../assets/css/enhanced.css">
+    <link rel="stylesheet" href="../assets/css/dashboard-enhanced.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-logo">👤</div>
+                <div class="sidebar-brand-text">
+                    HRMS HR
+                    <span>N.T Woods Pvt. Ltd.</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <div class="menu-section">
+                    <div class="menu-section-title">Overview</div>
+                    <a href="dashboard.html" class="menu-item active">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">Recruitment</div>
+                    <a href="review.html" class="menu-item">
+                        <span class="menu-icon">✓</span>
+                        <span class="menu-text">Review Requirements</span>
+                        <span class="menu-badge">2</span>
+                    </a>
+                    <a href="job-posting.html" class="menu-item">
+                        <span class="menu-icon">📢</span>
+                        <span class="menu-text">Job Posting</span>
+                    </a>
+                    <a href="upload-cv.html" class="menu-item">
+                        <span class="menu-icon">📄</span>
+                        <span class="menu-text">Upload CVs</span>
+                    </a>
+                    <a href="shortlisting.html" class="menu-item">
+                        <span class="menu-icon">✂️</span>
+                        <span class="menu-text">Shortlisting</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">Evaluation</div>
+                    <a href="on-call.html" class="menu-item">
+                        <span class="menu-icon">📞</span>
+                        <span class="menu-text">On-Call Screening</span>
+                    </a>
+                    <a href="owner-discussion.html" class="menu-item">
+                        <span class="menu-icon">💼</span>
+                        <span class="menu-text">Owner Discussion</span>
+                    </a>
+                    <a href="scheduling.html" class="menu-item">
+                        <span class="menu-icon">📅</span>
+                        <span class="menu-text">Interview Scheduling</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-section-title">Assessment</div>
+                    <a href="walk-ins.html" class="menu-item">
+                        <span class="menu-icon">🚶</span>
+                        <span class="menu-text">Walk-ins</span>
+                    </a>
+                    <a href="tests.html" class="menu-item">
+                        <span class="menu-icon">✏️</span>
+                        <span class="menu-text">Tests & Marks</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">H</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">HR User</div>
+                        <div class="user-role" id="userRole">HR</div>
+                    </div>
+                </div>
+                <button class="btn btn-ghost w-full mt-4" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="sidebar-toggle" id="menuToggle">
+                        <span></span>
+                    </button>
+                    <div class="search-bar">
+                        <span class="search-bar-icon">🔍</span>
+                        <input type="text" placeholder="Search candidates, jobs...">
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <button class="top-bar-btn">
+                        🔔
+                        <span class="badge-count">8</span>
+                    </button>
+                    <button class="top-bar-btn">📧</button>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">HR Dashboard</h1>
+                        <p class="page-subtitle">Manage your recruitment pipeline efficiently</p>
+                    </div>
+                    <a href="upload-cv.html" class="btn btn-primary btn-ripple">
+                        ➕ Upload New CVs
+                    </a>
+                </div>
+                
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card warning hover-lift">
+                        <div class="stat-card-icon">⏳</div>
+                        <div class="stat-card-value" id="pendingReview">0</div>
+                        <div class="stat-card-label">Pending Review</div>
+                    </div>
+                    
+                    <div class="stat-card hover-lift">
+                        <div class="stat-card-icon">📄</div>
+                        <div class="stat-card-value" id="totalCVs">0</div>
+                        <div class="stat-card-label">Total CVs</div>
+                    </div>
+                    
+                    <div class="stat-card success hover-lift">
+                        <div class="stat-card-icon">✓</div>
+                        <div class="stat-card-value" id="shortlisted">0</div>
+                        <div class="stat-card-label">Shortlisted</div>
+                    </div>
+                    
+                    <div class="stat-card info hover-lift">
+                        <div class="stat-card-icon">📅</div>
+                        <div class="stat-card-value" id="todayInterviews">0</div>
+                        <div class="stat-card-label">Today's Interviews</div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <a href="review.html" class="quick-action-card">
+                        <div class="quick-action-icon">✓</div>
+                        <span class="quick-action-title">Review Requirements</span>
+                    </a>
+                    <a href="on-call.html" class="quick-action-card">
+                        <div class="quick-action-icon">📞</div>
+                        <span class="quick-action-title">Start Calling</span>
+                    </a>
+                    <a href="scheduling.html" class="quick-action-card">
+                        <div class="quick-action-icon">📅</div>
+                        <span class="quick-action-title">Schedule Interview</span>
+                    </a>
+                    <a href="walk-ins.html" class="quick-action-card">
+                        <div class="quick-action-icon">🚶</div>
+                        <span class="quick-action-title">Manage Walk-ins</span>
+                    </a>
+                </div>
+                
+                <!-- Today's Interviews Card -->
+                <div class="card mb-6">
+                    <div class="card-header d-flex justify-between align-center">
+                        <h3>Today's Interviews</h3>
+                        <a href="walk-ins.html" class="btn btn-sm btn-primary">View All →</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Candidate Name</th>
+                                        <th>Job Role</th>
+                                        <th>Mobile</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="todayInterviewsTable">
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="empty-state">
+                                                <div class="empty-state-icon">📅</div>
+                                                <h4 class="empty-state-title">No Interviews Today</h4>
+                                                <p class="empty-state-text">Schedule interviews from the scheduling module</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pending Tasks -->
+                <div class="grid-3">
+                    <div class="card hover-lift">
+                        <div class="card-body">
+                            <div class="d-flex justify-between align-center mb-4">
+                                <div class="stat-card-icon" style="background: var(--warning-100); color: var(--warning-600);">📋</div>
+                                <span class="badge badge-warning" style="font-size: 1.25rem; padding: 8px 16px;">2</span>
+                            </div>
+                            <h4 class="mb-2">Requirements Pending</h4>
+                            <p class="text-muted mb-4" style="font-size: var(--text-sm);">Review new requirements raised by EA</p>
+                            <a href="review.html" class="btn btn-outline btn-block">Review Now</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card hover-lift">
+                        <div class="card-body">
+                            <div class="d-flex justify-between align-center mb-4">
+                                <div class="stat-card-icon">📞</div>
+                                <span class="badge badge-primary" style="font-size: 1.25rem; padding: 8px 16px;">5</span>
+                            </div>
+                            <h4 class="mb-2">Candidates for Call</h4>
+                            <p class="text-muted mb-4" style="font-size: var(--text-sm);">Conduct telephonic screening</p>
+                            <a href="on-call.html" class="btn btn-outline btn-block">Start Calling</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card hover-lift">
+                        <div class="card-body">
+                            <div class="d-flex justify-between align-center mb-4">
+                                <div class="stat-card-icon" style="background: var(--success-100); color: var(--success-600);">💼</div>
+                                <span class="badge badge-success" style="font-size: 1.25rem; padding: 8px 16px;">3</span>
+                            </div>
+                            <h4 class="mb-2">Owner Discussion</h4>
+                            <p class="text-muted mb-4" style="font-size: var(--text-sm);">Discuss recommended candidates</p>
+                            <a href="owner-discussion.html" class="btn btn-outline btn-block">Discuss Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="../config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script>
+        // Check HR authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = checkAuth();
+            if (!user) return;
+            
+            if (user.role !== 'HR') {
+                alert('Access denied. HR privileges required.');
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // Update user info
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userRole').textContent = user.role;
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+            
+            // Load dashboard data
+            loadDashboard();
+            
+            // Initialize mobile menu
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('active');
+            });
+            
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            });
+        });
+        
+        async function loadDashboard() {
+            // Simulate loading data
+            document.getElementById('pendingReview').textContent = '2';
+            document.getElementById('totalCVs').textContent = '45';
+            document.getElementById('shortlisted').textContent = '18';
+            document.getElementById('todayInterviews').textContent = '3';
+        }
+    </script>
+</body>
+</html>
