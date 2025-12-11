@@ -1,1 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shortlisting - HRMS HR</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🏢 HRMS HR</h2>
+                <p>N.T Woods Pvt. Ltd.</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="menu-item-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="review.html" class="menu-item">
+                    <span class="menu-item-icon">✓</span>
+                    <span>Review Requirements</span>
+                </a>
+                <a href="job-posting.html" class="menu-item">
+                    <span class="menu-item-icon">📢</span>
+                    <span>Job Posting</span>
+                </a>
+                <a href="upload-cv.html" class="menu-item">
+                    <span class="menu-item-icon">📄</span>
+                    <span>Upload CVs</span>
+                </a>
+                <a href="shortlisting.html" class="menu-item active">
+                    <span class="menu-item-icon">✂️</span>
+                    <span>Shortlisting</span>
+                </a>
+                <a href="on-call.html" class="menu-item">
+                    <span class="menu-item-icon">📞</span>
+                    <span>On-Call Conversation</span>
+                </a>
+                <a href="owner-discussion.html" class="menu-item">
+                    <span class="menu-item-icon">💼</span>
+                    <span>Owner Discussion</span>
+                </a>
+                <a href="scheduling.html" class="menu-item">
+                    <span class="menu-item-icon">📅</span>
+                    <span>Interview Scheduling</span>
+                </a>
+                <a href="walk-ins.html" class="menu-item">
+                    <span class="menu-item-icon">🚶</span>
+                    <span>Walk-ins</span>
+                </a>
+                <a href="tests.html" class="menu-item">
+                    <span class="menu-item-icon">✏️</span>
+                    <span>Test Management</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">H</div>
+                    <div class="user-details">
+                        <h4 id="userName">HR User</h4>
+                        <p id="userRole">Human Resources</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary w-100" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                    <div class="page-title">
+                        <h1>Candidate Shortlisting</h1>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <button class="notification-icon">
+                        🔔
+                        <span class="notification-badge">7</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Filters -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🔍 Filters</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label>Job/Role</label>
+                                <select id="jobFilter" class="form-control" onchange="loadCandidates()">
+                                    <option value="">All Jobs</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Source</label>
+                                <select id="sourceFilter" class="form-control" onchange="loadCandidates()">
+                                    <option value="">All Sources</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Candidates Table -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3>📋 Uploaded Candidates</h3>
+                        <span id="candidateCount" class="badge">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="loadingSpinner" class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading candidates...</p>
+                        </div>
+                        <div id="candidatesTableContainer" style="display: none;">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Mobile</th>
+                                            <th>Role</th>
+                                            <th>Source</th>
+                                            <th>CV</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="candidatesTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="emptyState" style="display: none;">
+                            <div class="empty-state">
+                                <span style="font-size: 4rem;">📭</span>
+                                <h3>No Candidates to Shortlist</h3>
+                                <p>No uploaded candidates found.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>❌ Reject Candidate</h3>
+                <button class="close-modal" onclick="closeRejectModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="rejectCandidateId">
+                <div class="form-group">
+                    <label for="rejectRemark">Reason for Rejection <span class="text-danger">*</span></label>
+                    <textarea id="rejectRemark" class="form-control" rows="3" placeholder="Enter reason for rejection..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="confirmReject()">❌ Confirm Reject</button>
+                <button class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script>
+        let allCandidates = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            populateFilters();
+            loadCandidates();
+        });
+
+        function populateFilters() {
+            const jobFilter = document.getElementById('jobFilter');
+            CONFIG.JOB_ROLES.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role;
+                option.textContent = role;
+                jobFilter.appendChild(option);
+            });
+
+            const sourceFilter = document.getElementById('sourceFilter');
+            CONFIG.JOB_PORTALS.forEach(portal => {
+                const option = document.createElement('option');
+                option.value = portal;
+                option.textContent = portal;
+                sourceFilter.appendChild(option);
+            });
+        }
+
+        async function loadCandidates() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('candidatesTableContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingSpinner.style.display = 'block';
+            tableContainer.style.display = 'none';
+            emptyState.style.display = 'none';
+
+            try {
+                const jobFilter = document.getElementById('jobFilter').value;
+                const sourceFilter = document.getElementById('sourceFilter').value;
+
+                const response = await apiCall('getCandidates', { 
+                    status: 'Uploaded',
+                    jobRole: jobFilter || undefined,
+                    source: sourceFilter || undefined
+                });
+                
+                if (response.success && response.candidates) {
+                    allCandidates = response.candidates;
+                    displayCandidates(allCandidates);
+                } else {
+                    throw new Error(response.message || 'Failed to load candidates');
+                }
+            } catch (error) {
+                console.error('Error loading candidates:', error);
+                showToast('Failed to load candidates: ' + error.message, 'error');
+                loadingSpinner.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        function displayCandidates(candidates) {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('candidatesTableContainer');
+            const emptyState = document.getElementById('emptyState');
+            const tbody = document.getElementById('candidatesTableBody');
+            const countBadge = document.getElementById('candidateCount');
+
+            loadingSpinner.style.display = 'none';
+            countBadge.textContent = candidates.length;
+
+            if (candidates.length === 0) {
+                emptyState.style.display = 'block';
+                tableContainer.style.display = 'none';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            candidates.forEach((candidate) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${candidate.name}</td>
+                    <td>${candidate.mobile}</td>
+                    <td><span class="badge badge-info">${candidate.jobRole}</span></td>
+                    <td>${candidate.source}</td>
+                    <td>
+                        ${candidate.cvUrl ? 
+                            `<a href="${candidate.cvUrl}" target="_blank" class="btn btn-sm btn-secondary">📄 Download</a>` : 
+                            '<span class="text-muted">No CV</span>'}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="approveCandidate('${candidate.id}')">✓ Approve</button>
+                        <button class="btn btn-sm btn-danger" onclick="openRejectModal('${candidate.id}')">✕ Reject</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            tableContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+        }
+
+        async function approveCandidate(candidateId) {
+            if (!confirm('Are you sure you want to shortlist this candidate?')) {
+                return;
+            }
+
+            try {
+                const response = await apiCall('shortlistCandidate', {
+                    candidateId: candidateId,
+                    action: 'approve'
+                });
+
+                if (response.success) {
+                    showToast('Candidate shortlisted successfully', 'success');
+                    loadCandidates();
+                } else {
+                    throw new Error(response.message || 'Failed to shortlist candidate');
+                }
+            } catch (error) {
+                console.error('Error shortlisting candidate:', error);
+                showToast('Failed to shortlist candidate: ' + error.message, 'error');
+            }
+        }
+
+        function openRejectModal(candidateId) {
+            document.getElementById('rejectCandidateId').value = candidateId;
+            document.getElementById('rejectRemark').value = '';
+            document.getElementById('rejectModal').style.display = 'flex';
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').style.display = 'none';
+        }
+
+        async function confirmReject() {
+            const candidateId = document.getElementById('rejectCandidateId').value;
+            const remark = document.getElementById('rejectRemark').value.trim();
+
+            if (!remark) {
+                showToast('Please enter a reason for rejection', 'warning');
+                return;
+            }
+
+            try {
+                const response = await apiCall('shortlistCandidate', {
+                    candidateId: candidateId,
+                    action: 'reject',
+                    remark: remark
+                });
+
+                if (response.success) {
+                    showToast('Candidate rejected', 'success');
+                    closeRejectModal();
+                    loadCandidates();
+                } else {
+                    throw new Error(response.message || 'Failed to reject candidate');
+                }
+            } catch (error) {
+                console.error('Error rejecting candidate:', error);
+                showToast('Failed to reject candidate: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
 
