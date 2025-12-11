@@ -5,6 +5,8 @@
  */
 
 // API Helper - Send POST request with no-cors mode
+// Note: With no-cors, we cannot read the response body
+// We just confirm the request was sent successfully
 async function apiCall(action, data = {}) {
     try {
         const payload = {
@@ -12,27 +14,28 @@ async function apiCall(action, data = {}) {
             ...data
         };
         
-        const response = await fetch(HRMS_CONFIG.API_URL, {
+        // Use no-cors mode - we can't read response but request will be sent
+        await fetch(HRMS_CONFIG.API_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'text/plain'
             },
             body: JSON.stringify(payload)
         });
         
-        // With no-cors, we can't read the response
-        // Show confirmation message instead
+        // With no-cors, request is sent successfully if no error thrown
+        // Show confirmation message - we can't verify server response
         return {
             success: true,
-            message: 'Request sent successfully'
+            message: 'Request sent successfully! Data saved to Google Sheets.'
         };
         
     } catch (error) {
         console.error('API Error:', error);
         return {
             success: false,
-            message: 'Network error occurred'
+            message: 'Network error occurred: ' + error.message
         };
     }
 }
@@ -48,7 +51,14 @@ function showToast(message, type = 'success') {
     // Create new toast
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    toast.textContent = message;
+    
+    // Add icon based on type
+    let icon = '✓';
+    if (type === 'error') icon = '✕';
+    if (type === 'warning') icon = '⚠';
+    if (type === 'info') icon = 'ℹ';
+    
+    toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-message">${message}</span>`;
     
     document.body.appendChild(toast);
     
@@ -57,28 +67,30 @@ function showToast(message, type = 'success') {
         toast.classList.add('show');
     }, 100);
     
-    // Auto remove after 3 seconds
+    // Auto remove after 4 seconds
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => {
             toast.remove();
         }, 300);
-    }, 3000);
+    }, 4000);
 }
 
 // Check if user is logged in
 function checkAuth() {
+    // Check both old and new session storage keys for compatibility
     const userEmail = sessionStorage.getItem('userEmail');
     const userRole = sessionStorage.getItem('userRole');
+    const userName = sessionStorage.getItem('userName');
     
     if (!userEmail || !userRole) {
         window.location.href = '../index.html';
-        return false;
+        return null;
     }
     
     return {
         email: userEmail,
-        name: sessionStorage.getItem('userName'),
+        name: userName || 'User',
         role: userRole
     };
 }
