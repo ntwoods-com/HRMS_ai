@@ -6,11 +6,11 @@
 const HRMS_CONFIG = {
     // Google Apps Script Web App URL
     // After deploying your Code.gs, paste the web app URL here
-    API_URL: 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE',
+    API_URL: 'https://script.google.com/macros/s/AKfycbxvlOR7Q69vZuJAAEaJ4gsB3X2HQpgVS_iY8M_9jEaGKzA_KgvrnsBcFkpaJz7EkaoCDQ/exec',
     
     // Google OAuth Client ID
     // Get this from Google Cloud Console
-    GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com',
+    GOOGLE_CLIENT_ID: '1029752642188-ku0k9krbdbsttj9br238glq8h4k5loj3.apps.googleusercontent.com',
     
     // Application Settings
     APP_NAME: 'HRMS - N.T Woods Pvt. Ltd.',
