@@ -1,1 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Requirements - HRMS</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>HRMS</h2>
+                <span class="role-badge">Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span>📊</span> Dashboard</a>
+                <a href="users.html" class="nav-item"><span>👥</span> Users</a>
+                <a href="permissions.html" class="nav-item"><span>🔐</span> Permissions</a>
+                <a href="templates.html" class="nav-item"><span>📋</span> Templates</a>
+                <a href="requirements.html" class="nav-item active"><span>📝</span> Requirements</a>
+                <a href="candidates.html" class="nav-item"><span>👤</span> Candidates</a>
+                <a href="tests.html" class="nav-item"><span>✏️</span> Tests</a>
+                <a href="reports.html" class="nav-item"><span>📈</span> Reports</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-secondary btn-block" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="btn-icon" id="toggleSidebar">☰</button>
+                    <h1>All Requirements</h1>
+                </div>
+                <div class="top-bar-right">
+                    <span class="user-name" id="userName">Admin User</span>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="actions-bar">
+                    <div class="search-box">
+                        <input type="text" id="searchReq" placeholder="Search..." onkeyup="filterRequirements()">
+                    </div>
+                    <select id="statusFilter" class="form-control" onchange="filterRequirements()">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Review">In Review</option>
+                        <option value="Valid">Valid</option>
+                        <option value="Incomplete">Incomplete</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="downloadCSV(filteredRequirements, 'requirements')">Export CSV</button>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Req ID</th>
+                                    <th>Job Title</th>
+                                    <th>Role</th>
+                                    <th>Raised By</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requirementsTable">
+                                <tr><td colspan="7" class="text-center"><div class="loading-spinner"></div> Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/admin-common.js"></script>
+    <script>
+        let allRequirements = [];
+        let filteredRequirements = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadRequirements();
+        });
+
+        async function loadRequirements() {
+            try {
+                const response = await apiCall('getRequirements', {});
+                allRequirements = response.requirements || [];
+                filteredRequirements = allRequirements;
+                renderRequirements();
+            } catch (error) {
+                document.getElementById('requirementsTable').innerHTML = 
+                    '<tr><td colspan="7" class="text-center text-danger">Failed to load</td></tr>';
+            }
+        }
+
+        function renderRequirements() {
+            const tbody = document.getElementById('requirementsTable');
+            if (filteredRequirements.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No requirements found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredRequirements.map(r => `
+                <tr>
+                    <td>${r.reqId}</td>
+                    <td>${r.jobTitle}</td>
+                    <td><span class="badge badge-primary">${r.jobRole}</span></td>
+                    <td>${r.raisedBy}</td>
+                    <td>${formatDate(r.raisedDate)}</td>
+                    <td><span class="badge ${getStatusClass(r.status)}">${r.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="viewDetails('${r.reqId}')">View</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterRequirements() {
+            const search = document.getElementById('searchReq').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+
+            filteredRequirements = allRequirements.filter(r => {
+                const matchesSearch = r.jobTitle.toLowerCase().includes(search) || 
+                                     r.reqId.toLowerCase().includes(search) ||
+                                     r.jobRole.toLowerCase().includes(search);
+                const matchesStatus = !status || r.status === status;
+                return matchesSearch && matchesStatus;
+            });
+
+            renderRequirements();
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'Pending': 'badge-warning',
+                'In Review': 'badge-info',
+                'Valid': 'badge-success',
+                'Incomplete': 'badge-danger',
+                'Closed': 'badge-secondary'
+            };
+            return classes[status] || 'badge-secondary';
+        }
+
+        function viewDetails(reqId) {
+            const req = allRequirements.find(r => r.reqId === reqId);
+            if (!req) return;
+            
+            alert(`Requirement Details:\n\n${JSON.stringify(req, null, 2)}`);
+        }
+    </script>
+</body>
+</html>
 
