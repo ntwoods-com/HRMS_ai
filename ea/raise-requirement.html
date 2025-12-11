@@ -148,7 +148,7 @@
 
         function populateJobRoles() {
             const jobRoleSelect = document.getElementById('jobRole');
-            CONFIG.JOB_ROLES.forEach(role => {
+            HRMS_CONFIG.JOB_ROLES.forEach(role => {
                 const option = document.createElement('option');
                 option.value = role;
                 option.textContent = role;
