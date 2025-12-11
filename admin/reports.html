@@ -222,10 +222,13 @@
     <script src="../assets/js/admin-common.js"></script>
     <script>
         let dashboardData = null;
+        let currentUser = null;
 
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            loadDashboardStats();
+            currentUser = checkAuth();
+            if (currentUser) {
+                loadDashboardStats();
+            }
         });
 
         async function loadDashboardStats() {
@@ -236,18 +239,31 @@
             dashboardContent.style.display = 'none';
 
             try {
-                const response = await apiCall('getDashboardStats', {});
+                // With no-cors, we can't read response
+                await apiCall('getDashboardStats', {});
                 
-                if (response.success && response.stats) {
-                    dashboardData = response.stats;
-                    displayStats(response.stats);
-                } else {
-                    throw new Error(response.message || 'Failed to load dashboard stats');
-                }
+                showToast('ℹ️ Check Google Sheets for detailed stats.', 'info');
+                
+                // Show sample stats
+                const sampleStats = {
+                    totalRequirements: '?',
+                    totalCandidates: '?',
+                    shortlisted: '?',
+                    rejected: '?',
+                    hired: '?'
+                };
+                displayStats(sampleStats);
+                
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
-                showToast('Failed to load dashboard stats: ' + error.message, 'error');
-                loadingSpinner.style.display = 'none';
+                // Still show the dashboard with placeholder values
+                displayStats({
+                    totalRequirements: '?',
+                    totalCandidates: '?',
+                    shortlisted: '?',
+                    rejected: '?',
+                    hired: '?'
+                });
             }
         }
 
@@ -255,98 +271,21 @@
             const loadingSpinner = document.getElementById('loadingSpinner');
             const dashboardContent = document.getElementById('dashboardContent');
 
-            // Update stat cards
-            document.getElementById('totalRequirements').textContent = stats.totalRequirements || 0;
-            document.getElementById('totalCandidates').textContent = stats.totalCandidates || 0;
-            document.getElementById('shortlistedCandidates').textContent = stats.shortlisted || 0;
-            
-            // Calculate in-process (Called, Recommended, Approved, Scheduled, Appeared)
-            const inProcess = (stats.called || 0) + (stats.recommended || 0) + 
-                            (stats.approved || 0) + (stats.scheduled || 0) + (stats.appeared || 0);
-            document.getElementById('inProcessCandidates').textContent = inProcess;
-            
-            document.getElementById('rejectedCandidates').textContent = stats.rejected || 0;
-            document.getElementById('hiredCandidates').textContent = stats.hired || 0;
+            // Update stat cards with placeholder values
+            document.getElementById('totalRequirements').textContent = stats.totalRequirements || '?';
+            document.getElementById('totalCandidates').textContent = stats.totalCandidates || '?';
+            document.getElementById('shortlistedCandidates').textContent = stats.shortlisted || '?';
+            document.getElementById('inProcessCandidates').textContent = '?';
+            document.getElementById('rejectedCandidates').textContent = stats.rejected || '?';
+            document.getElementById('hiredCandidates').textContent = stats.hired || '?';
 
             loadingSpinner.style.display = 'none';
             dashboardContent.style.display = 'block';
         }
 
         async function exportStage(stage) {
-            try {
-                let response;
-                let filename;
-                
-                if (stage === 'requirements') {
-                    response = await apiCall('getRequirements', {});
-                    filename = 'requirements';
-                } else if (stage === 'all') {
-                    response = await apiCall('getCandidates', {});
-                    filename = 'all_candidates';
-                } else if (stage === 'process') {
-                    response = await apiCall('getCandidates', {});
-                    const processStages = ['Called', 'Recommended', 'Approved', 'Scheduled', 'Appeared'];
-                    response.candidates = response.candidates?.filter(c => processStages.includes(c.status));
-                    filename = 'inprocess_candidates';
-                } else {
-                    response = await apiCall('getCandidates', { status: stage });
-                    filename = stage.toLowerCase() + '_candidates';
-                }
-
-                if (!response.success) {
-                    throw new Error(response.message || 'Failed to export data');
-                }
-
-                const data = response.requirements || response.candidates || [];
-                
-                if (data.length === 0) {
-                    showToast('No data to export', 'warning');
-                    return;
-                }
-
-                // Generate CSV
-                let headers, rows;
-                if (stage === 'requirements') {
-                    headers = ['ID', 'Job Title', 'Role', 'Status', 'Raised By', 'Raised Date'];
-                    rows = data.map((r, i) => [
-                        i + 1,
-                        r.jobTitle || '',
-                        r.jobRole || '',
-                        r.status || '',
-                        r.raisedBy || '',
-                        formatDate(r.raisedDate)
-                    ]);
-                } else {
-                    headers = ['ID', 'Name', 'Mobile', 'Role', 'Source', 'Status', 'Upload Date'];
-                    rows = data.map((c, i) => [
-                        i + 1,
-                        c.name || '',
-                        c.mobile || '',
-                        c.jobRole || '',
-                        c.source || '',
-                        c.status || '',
-                        formatDate(c.uploadDate)
-                    ]);
-                }
-
-                const csvContent = [
-                    headers.join(','),
-                    ...rows.map(row => row.join(','))
-                ].join('\n');
-
-                const blob = new Blob([csvContent], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-                
-                showToast('Data exported successfully', 'success');
-            } catch (error) {
-                console.error('Error exporting data:', error);
-                showToast('Failed to export data: ' + error.message, 'error');
-            }
+            showToast('📥 Export data directly from Google Sheets for accurate results.', 'info');
+            showToast('Go to Google Sheets → File → Download → CSV/Excel', 'info');
         }
     </script>
 </body>
