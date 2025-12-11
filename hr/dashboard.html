@@ -295,11 +295,19 @@
         });
         
         async function loadDashboard() {
-            // Simulate loading data
-            document.getElementById('pendingReview').textContent = '2';
-            document.getElementById('totalCVs').textContent = '45';
-            document.getElementById('shortlisted').textContent = '18';
-            document.getElementById('todayInterviews').textContent = '3';
+            // Show placeholder stats - with no-cors we can't read data
+            document.getElementById('pendingReview').textContent = '-';
+            document.getElementById('totalCVs').textContent = '-';
+            document.getElementById('shortlisted').textContent = '-';
+            document.getElementById('todayInterviews').textContent = '-';
+            
+            // Send request (data saved but can't read response)
+            try {
+                await apiCall('getDashboardStats', {});
+                showToast('ℹ️ Connected to Google Sheets! View data there.', 'info');
+            } catch (error) {
+                console.error('Dashboard error:', error);
+            }
         }
     </script>
 </body>
