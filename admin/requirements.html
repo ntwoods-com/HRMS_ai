@@ -87,59 +87,49 @@
     <script>
         let allRequirements = [];
         let filteredRequirements = [];
+        let currentUser = null;
 
         window.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            loadRequirements();
+            currentUser = checkAuth();
+            if (currentUser) {
+                loadRequirements();
+            }
         });
 
         async function loadRequirements() {
             try {
-                const response = await apiCall('getRequirements', {});
-                allRequirements = response.requirements || [];
-                filteredRequirements = allRequirements;
-                renderRequirements();
+                // With no-cors, we can't read response
+                await apiCall('getRequirements', {});
+                
+                showToast('ℹ️ Check Google Sheets for requirements list.', 'info');
+                
+                // Show info message
+                document.getElementById('requirementsTable').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="alert alert-info">
+                                <p>📋 Requirements data is stored in Google Sheets (Requirements tab).</p>
+                                <p>Use EA Portal to raise new requirements.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
             } catch (error) {
                 document.getElementById('requirementsTable').innerHTML = 
-                    '<tr><td colspan="7" class="text-center text-danger">Failed to load</td></tr>';
+                    '<tr><td colspan="7" class="text-center">Check Google Sheets for requirements data.</td></tr>';
             }
         }
 
         function renderRequirements() {
             const tbody = document.getElementById('requirementsTable');
-            if (filteredRequirements.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No requirements found</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filteredRequirements.map(r => `
-                <tr>
-                    <td>${r.reqId}</td>
-                    <td>${r.jobTitle}</td>
-                    <td><span class="badge badge-primary">${r.jobRole}</span></td>
-                    <td>${r.raisedBy}</td>
-                    <td>${formatDate(r.raisedDate)}</td>
-                    <td><span class="badge ${getStatusClass(r.status)}">${r.status}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="viewDetails('${r.reqId}')">View</button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">Check Google Sheets for requirements data.</td></tr>';
         }
 
         function filterRequirements() {
             const search = document.getElementById('searchReq').value.toLowerCase();
             const status = document.getElementById('statusFilter').value;
-
-            filteredRequirements = allRequirements.filter(r => {
-                const matchesSearch = r.jobTitle.toLowerCase().includes(search) || 
-                                     r.reqId.toLowerCase().includes(search) ||
-                                     r.jobRole.toLowerCase().includes(search);
-                const matchesStatus = !status || r.status === status;
-                return matchesSearch && matchesStatus;
-            });
-
-            renderRequirements();
+            
+            showToast(`Search in Google Sheets: "${search}" with status: ${status || 'All'}`, 'info');
         }
 
         function getStatusClass(status) {
@@ -154,10 +144,7 @@
         }
 
         function viewDetails(reqId) {
-            const req = allRequirements.find(r => r.reqId === reqId);
-            if (!req) return;
-            
-            alert(`Requirement Details:\n\n${JSON.stringify(req, null, 2)}`);
+            showToast(`Check Google Sheets for details of requirement: ${reqId}`, 'info');
         }
     </script>
 </body>
