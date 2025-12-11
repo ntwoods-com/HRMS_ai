@@ -131,10 +131,11 @@
             emptyState.style.display = 'none';
 
             try {
-                const response = await apiCall('getRequirementsForReview', {});
+                // Use apiGet for reading data
+                const response = await apiGet('getRequirementsForReview');
                 
-                if (response.success && response.requirements) {
-                    displayRequirements(response.requirements);
+                if (response.success && response.data) {
+                    displayRequirements(response.data);
                 } else {
                     throw new Error(response.message || 'Failed to load requirements');
                 }
