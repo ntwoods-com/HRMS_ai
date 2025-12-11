@@ -77,8 +77,11 @@ const HRMS_CONFIG = {
     }
 };
 
+// Alias for backward compatibility
+const CONFIG = HRMS_CONFIG;
+
 // Helper function to check if config is set up
 function isConfigured() {
-    return HRMS_CONFIG.API_URL !== 'https://script.google.com/macros/s/AKfycby0_RaPi3u6CjhAfuyVv2ARoNbk517JrKGfRKV2gEU22UoWlwGcIEqtHLjuZzy-rNptoQ/exec' &&
-           HRMS_CONFIG.GOOGLE_CLIENT_ID !== '1029752642188-ku0k9krbdbsttj9br238glq8h4k5loj3.apps.googleusercontent.com;
+    return HRMS_CONFIG.API_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' &&
+           HRMS_CONFIG.GOOGLE_CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com';
 }
