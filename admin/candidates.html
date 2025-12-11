@@ -1,1 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidates - HRMS Admin</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🏢 HRMS Admin</h2>
+                <p>N.T Woods Pvt. Ltd.</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="menu-item-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="users.html" class="menu-item">
+                    <span class="menu-item-icon">👥</span>
+                    <span>User Management</span>
+                </a>
+                <a href="permissions.html" class="menu-item">
+                    <span class="menu-item-icon">🔐</span>
+                    <span>Permissions</span>
+                </a>
+                <a href="templates.html" class="menu-item">
+                    <span class="menu-item-icon">📝</span>
+                    <span>Job Templates</span>
+                </a>
+                <a href="requirements.html" class="menu-item">
+                    <span class="menu-item-icon">📋</span>
+                    <span>Requirements</span>
+                </a>
+                <a href="candidates.html" class="menu-item active">
+                    <span class="menu-item-icon">👤</span>
+                    <span>Candidates</span>
+                </a>
+                <a href="tests.html" class="menu-item">
+                    <span class="menu-item-icon">✏️</span>
+                    <span>Test Management</span>
+                </a>
+                <a href="reports.html" class="menu-item">
+                    <span class="menu-item-icon">📈</span>
+                    <span>Reports</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <h4 id="userName">Admin User</h4>
+                        <p id="userRole">Administrator</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary w-100" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                    <div class="page-title">
+                        <h1>All Candidates</h1>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <button class="notification-icon">
+                        🔔
+                        <span class="notification-badge">5</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Filters and Search -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🔍 Filters</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label>Search</label>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search by name or mobile...">
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="Uploaded">Uploaded</option>
+                                    <option value="Shortlisted">Shortlisted</option>
+                                    <option value="Called">Called</option>
+                                    <option value="Recommended">Recommended</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Scheduled">Scheduled</option>
+                                    <option value="Appeared">Appeared</option>
+                                    <option value="Hired">Hired</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Role</label>
+                                <select id="roleFilter" class="form-control">
+                                    <option value="">All Roles</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Source</label>
+                                <select id="sourceFilter" class="form-control">
+                                    <option value="">All Sources</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary w-100" onclick="loadCandidates()">Apply Filters</button>
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-success w-100" onclick="exportToCSV()">📥 Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Candidates Table -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3>📋 Candidates List</h3>
+                        <span id="candidateCount" class="badge">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="loadingSpinner" class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading candidates...</p>
+                        </div>
+                        <div id="candidatesTableContainer" style="display: none;">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Mobile</th>
+                                            <th>Role</th>
+                                            <th>Source</th>
+                                            <th>Status</th>
+                                            <th>Uploaded Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="candidatesTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="emptyState" style="display: none;">
+                            <div class="empty-state">
+                                <span style="font-size: 4rem;">📭</span>
+                                <h3>No Candidates Found</h3>
+                                <p>No candidates match your current filters.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Candidate Details Modal -->
+    <div id="candidateModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>👤 Candidate Details</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="candidateDetails">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/admin-common.js"></script>
+    <script>
+        let allCandidates = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            populateFilters();
+            loadCandidates();
+        });
+
+        function populateFilters() {
+            // Populate role filter
+            const roleFilter = document.getElementById('roleFilter');
+            CONFIG.JOB_ROLES.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role;
+                option.textContent = role;
+                roleFilter.appendChild(option);
+            });
+
+            // Populate source filter
+            const sourceFilter = document.getElementById('sourceFilter');
+            CONFIG.JOB_PORTALS.forEach(portal => {
+                const option = document.createElement('option');
+                option.value = portal;
+                option.textContent = portal;
+                sourceFilter.appendChild(option);
+            });
+        }
+
+        async function loadCandidates() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('candidatesTableContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingSpinner.style.display = 'block';
+            tableContainer.style.display = 'none';
+            emptyState.style.display = 'none';
+
+            try {
+                const response = await apiCall('getCandidates', {});
+                
+                if (response.success && response.candidates) {
+                    allCandidates = response.candidates;
+                    applyFilters();
+                } else {
+                    throw new Error(response.message || 'Failed to load candidates');
+                }
+            } catch (error) {
+                console.error('Error loading candidates:', error);
+                showToast('Failed to load candidates: ' + error.message, 'error');
+                loadingSpinner.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const roleFilter = document.getElementById('roleFilter').value;
+            const sourceFilter = document.getElementById('sourceFilter').value;
+
+            let filtered = allCandidates.filter(candidate => {
+                const matchSearch = !searchTerm || 
+                    candidate.name.toLowerCase().includes(searchTerm) || 
+                    candidate.mobile.includes(searchTerm);
+                const matchStatus = !statusFilter || candidate.status === statusFilter;
+                const matchRole = !roleFilter || candidate.jobRole === roleFilter;
+                const matchSource = !sourceFilter || candidate.source === sourceFilter;
+                
+                return matchSearch && matchStatus && matchRole && matchSource;
+            });
+
+            displayCandidates(filtered);
+        }
+
+        function displayCandidates(candidates) {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const tableContainer = document.getElementById('candidatesTableContainer');
+            const emptyState = document.getElementById('emptyState');
+            const tbody = document.getElementById('candidatesTableBody');
+            const countBadge = document.getElementById('candidateCount');
+
+            loadingSpinner.style.display = 'none';
+            countBadge.textContent = candidates.length;
+
+            if (candidates.length === 0) {
+                emptyState.style.display = 'block';
+                tableContainer.style.display = 'none';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            candidates.forEach((candidate, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${candidate.name}</td>
+                    <td>${candidate.mobile}</td>
+                    <td><span class="badge badge-info">${candidate.jobRole}</span></td>
+                    <td>${candidate.source}</td>
+                    <td><span class="badge badge-${getStatusColor(candidate.status)}">${candidate.status}</span></td>
+                    <td>${formatDate(candidate.uploadDate)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="viewCandidate('${candidate.id}')">View Details</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            tableContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'Uploaded': 'secondary',
+                'Shortlisted': 'info',
+                'Called': 'primary',
+                'Recommended': 'warning',
+                'Approved': 'success',
+                'Scheduled': 'info',
+                'Appeared': 'primary',
+                'Hired': 'success',
+                'Rejected': 'danger',
+                'Hold': 'warning'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function viewCandidate(candidateId) {
+            const candidate = allCandidates.find(c => c.id === candidateId);
+            if (!candidate) return;
+
+            const detailsDiv = document.getElementById('candidateDetails');
+            detailsDiv.innerHTML = `
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Name:</label>
+                        <span>${candidate.name}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Mobile:</label>
+                        <span>${candidate.mobile}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Job Role:</label>
+                        <span>${candidate.jobRole}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Source:</label>
+                        <span>${candidate.source}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status:</label>
+                        <span class="badge badge-${getStatusColor(candidate.status)}">${candidate.status}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Upload Date:</label>
+                        <span>${formatDate(candidate.uploadDate)}</span>
+                    </div>
+                    ${candidate.cvUrl ? `
+                    <div class="detail-item">
+                        <label>CV:</label>
+                        <a href="${candidate.cvUrl}" target="_blank" class="btn btn-sm btn-primary">📄 Download CV</a>
+                    </div>
+                    ` : ''}
+                    ${candidate.communicationSkills ? `
+                    <div class="detail-item">
+                        <label>Communication:</label>
+                        <span>${candidate.communicationSkills}/10</span>
+                    </div>
+                    ` : ''}
+                    ${candidate.professionalExperience ? `
+                    <div class="detail-item">
+                        <label>Experience:</label>
+                        <span>${candidate.professionalExperience}/10</span>
+                    </div>
+                    ` : ''}
+                    ${candidate.familyBackground ? `
+                    <div class="detail-item" style="grid-column: 1/-1;">
+                        <label>Family Background:</label>
+                        <span>${candidate.familyBackground}</span>
+                    </div>
+                    ` : ''}
+                    ${candidate.remark ? `
+                    <div class="detail-item" style="grid-column: 1/-1;">
+                        <label>Remark:</label>
+                        <span>${candidate.remark}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('candidateModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('candidateModal').style.display = 'none';
+        }
+
+        function exportToCSV() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const roleFilter = document.getElementById('roleFilter').value;
+            const sourceFilter = document.getElementById('sourceFilter').value;
+
+            let filtered = allCandidates.filter(candidate => {
+                const matchSearch = !searchTerm || 
+                    candidate.name.toLowerCase().includes(searchTerm) || 
+                    candidate.mobile.includes(searchTerm);
+                const matchStatus = !statusFilter || candidate.status === statusFilter;
+                const matchRole = !roleFilter || candidate.jobRole === roleFilter;
+                const matchSource = !sourceFilter || candidate.source === sourceFilter;
+                
+                return matchSearch && matchStatus && matchRole && matchSource;
+            });
+
+            if (filtered.length === 0) {
+                showToast('No candidates to export', 'warning');
+                return;
+            }
+
+            const headers = ['ID', 'Name', 'Mobile', 'Role', 'Source', 'Status', 'Upload Date'];
+            const csvContent = [
+                headers.join(','),
+                ...filtered.map((c, i) => [
+                    i + 1,
+                    c.name,
+                    c.mobile,
+                    c.jobRole,
+                    c.source,
+                    c.status,
+                    formatDate(c.uploadDate)
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `candidates_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showToast('CSV exported successfully', 'success');
+        }
+
+        // Search on keyup
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            applyFilters();
+        });
+    </script>
+</body>
+</html>
 
