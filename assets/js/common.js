@@ -3,15 +3,34 @@
  * Shared utilities across all modules
  */
 
+// Validate CONFIG is loaded
+if (typeof HRMS_CONFIG === 'undefined') {
+    console.error('❌ CRITICAL ERROR: HRMS_CONFIG is not defined!');
+    console.error('Solution: Ensure config.js is loaded BEFORE common.js');
+    console.error('Add this line in HTML: <script src="../config.js"></script>');
+    alert('Configuration Error: config.js not loaded. Please check the console for details.');
+}
+
+// Shorthand reference
+const CONFIG = typeof HRMS_CONFIG !== 'undefined' ? HRMS_CONFIG : {
+    API_URL: null,
+    GOOGLE_CLIENT_ID: null
+};
+
 // API Helper - Send POST request with no-cors mode
 async function apiCall(action, data = {}) {
+    if (!CONFIG.API_URL) {
+        console.error('❌ API_URL not configured in config.js');
+        throw new Error('API_URL not configured');
+    }
+    
     try {
         const payload = {
             action: action,
             ...data
         };
         
-        const response = await fetch(HRMS_CONFIG.API_URL, {
+        const response = await fetch(CONFIG.API_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: {
@@ -32,6 +51,38 @@ async function apiCall(action, data = {}) {
         return {
             success: false,
             message: 'Network error occurred'
+        };
+    }
+}
+
+// API Helper - Send GET request (for reading data)
+async function apiGet(action, params = {}) {
+    if (!CONFIG.API_URL) {
+        console.error('❌ API_URL not configured in config.js');
+        throw new Error('API_URL not configured');
+    }
+    
+    try {
+        const queryParams = new URLSearchParams({ action, ...params });
+        const url = `${CONFIG.API_URL}?${queryParams}`;
+        
+        const response = await fetch(url, {
+            method: 'GET'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        return result;
+        
+    } catch (error) {
+        console.error('API Error:', error);
+        return {
+            success: false,
+            message: error.message || 'Network error occurred',
+            data: null
         };
     }
 }
@@ -356,4 +407,3 @@ function initTooltips() {
 document.addEventListener('DOMContentLoaded', function() {
     initTooltips();
 });
-
